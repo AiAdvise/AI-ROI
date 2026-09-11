@@ -19,6 +19,8 @@ const config: Config = {
         "severe-soft": "#fbebe9",
         caution: "#95610f",
         "caution-soft": "#fbf1e0",
+        good: "#3f6b4a",
+        "good-soft": "#eaf2ec",
       },
       fontFamily: {
         serif: ["var(--font-serif)", "Georgia", "serif"],

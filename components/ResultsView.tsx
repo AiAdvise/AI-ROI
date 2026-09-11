@@ -6,12 +6,20 @@ const SEVERITY_META: Record<string, { label: string; border: string; badge: stri
   low: { label: "Low", border: "border-l-line", badge: "bg-paper text-ink-soft" },
 };
 
-const ASSESSMENT_LABELS: Record<string, string> = {
-  above: "Above benchmark",
-  within: "Within normal range",
-  below: "Below benchmark",
-  no_benchmark_available: "No benchmark available",
-  insufficient_data: "Can't calculate - report is missing data",
+// "above"/"below" don't map to good/bad on their own - above a CPL benchmark is
+// bad, above a ROAS benchmark is good - so those are coded as "worth a look"
+// rather than guessing a direction. "within" is the only assessment we treat as
+// a clean signal, and "insufficient_data" is coded like a finding, since it
+// usually means the agency's own report is withholding what's needed.
+const ASSESSMENT_META: Record<string, { label: string; badge: string }> = {
+  above: { label: "Above benchmark - worth a look", badge: "bg-caution-soft text-caution" },
+  within: { label: "Within normal range", badge: "bg-good-soft text-good" },
+  below: { label: "Below benchmark - worth a look", badge: "bg-caution-soft text-caution" },
+  no_benchmark_available: { label: "No benchmark available", badge: "bg-paper text-ink-soft" },
+  insufficient_data: {
+    label: "Can't calculate - report is missing data",
+    badge: "bg-severe-soft text-severe",
+  },
 };
 
 const OVERALL_META: Record<string, { label: string; className: string }> = {
@@ -23,8 +31,8 @@ const OVERALL_META: Record<string, { label: string; className: string }> = {
 function benchmarkRangeText(b: AnalysisResult["benchmarkComparisons"][number]): string {
   // Defensive fallback in case the model puts the raw assessment value in
   // benchmarkRange instead of readable prose - never show a raw enum to the user.
-  if (b.benchmarkRange in ASSESSMENT_LABELS) {
-    return ASSESSMENT_LABELS[b.benchmarkRange];
+  if (b.benchmarkRange in ASSESSMENT_META) {
+    return ASSESSMENT_META[b.benchmarkRange].label;
   }
   return b.benchmarkRange;
 }
@@ -168,12 +176,16 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
           <p className="text-sm text-ink-soft">No benchmark comparisons available.</p>
         ) : (
           <div className="space-y-3">
-            {result.benchmarkComparisons.map((b, i) => (
+            {result.benchmarkComparisons.map((b, i) => {
+              const meta = ASSESSMENT_META[b.assessment] ?? ASSESSMENT_META.no_benchmark_available;
+              return (
               <div key={i} className="rounded-lg border border-line bg-paper-raised p-4">
                 <div className="flex items-center justify-between gap-3">
                   <h3 className="font-medium text-ink">{b.metric}</h3>
-                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-paper text-ink-soft shrink-0">
-                    {ASSESSMENT_LABELS[b.assessment]}
+                  <span
+                    className={`text-xs font-medium px-2 py-1 rounded-full shrink-0 ${meta.badge}`}
+                  >
+                    {meta.label}
                   </span>
                 </div>
                 <p className="text-sm text-ink-soft mt-1.5">
@@ -183,7 +195,8 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
                 </p>
                 <p className="text-sm text-ink-soft mt-2 leading-relaxed">{b.commentary}</p>
               </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
