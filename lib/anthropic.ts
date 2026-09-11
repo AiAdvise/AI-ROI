@@ -88,10 +88,11 @@ export async function analyzeMediaPlan(input: AnalyzeInput): Promise<AnalysisRes
     ? `The business owner identifies their trade as: ${input.trade}. Use this to select the most relevant benchmarks from the framework. Analyze the attached agency report/media plan now and return the JSON object described in your instructions.`
     : `Analyze the attached agency report/media plan now and return the JSON object described in your instructions.`;
 
-  const response = await anthropic.messages.create({
+  const stream = anthropic.messages.stream({
     model: MODEL,
     max_tokens: 8000,
     system: SYSTEM_PROMPT,
+    output_config: { effort: "medium" },
     messages: [
       {
         role: "user",
@@ -99,6 +100,8 @@ export async function analyzeMediaPlan(input: AnalyzeInput): Promise<AnalysisRes
       },
     ],
   });
+
+  const response = await stream.finalMessage();
 
   const textBlock = response.content.find(
     (block): block is Anthropic.Messages.TextBlock => block.type === "text",

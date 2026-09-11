@@ -27,6 +27,13 @@ export default function Home() {
         body: formData,
       });
 
+      if (!res.headers.get("content-type")?.includes("application/json")) {
+        throw new Error(
+          "The server took too long or hit an unexpected error. Please try again - if it " +
+            "keeps happening, try a smaller or simpler file.",
+        );
+      }
+
       const data = await res.json();
 
       if (!res.ok) {
