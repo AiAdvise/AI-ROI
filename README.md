@@ -1,85 +1,52 @@
-Interactive Quiz
-This project is an interactive quiz built using Bolt.now, React, and TypeScript, with a modern front-end setup using Vite. The quiz provides users with engaging questions and displays results based on their answers.
+# Media Plan Diagnostic
 
-Table of Contents
-Features
-Installation
-Usage
-Project Structure
-Customization
-Deployment
-Contributing
-License
-Features
-Interactive questions with user feedback
-Real-time result calculations
-Customizable questions and scoring logic
-Responsive design optimized for various devices
-Installation
-Clone the Repository:
+A business owner uploads their advertising agency's ad report or media plan (PDF or image). The app extracts the channel mix, spend, and KPIs, analyzes it against a reference diagnostic framework, and returns:
 
-bash
-Copy code
-git clone https://github.com/your-username/your-repo-name.git
-cd your-repo-name
-Install Dependencies: Make sure you have Node.js installed, then run:
+1. A plain-English summary
+2. Specific red flags with reasoning
+3. Benchmark comparisons
+4. A list of questions to ask the agency
 
-bash
-Copy code
+This is the MVP flow: upload -> analyze -> results. No accounts yet.
+
+## Stack
+
+- Next.js (App Router) + TypeScript
+- Tailwind CSS
+- `@anthropic-ai/sdk` calling the Claude API (`claude-opus-5`), which reads the uploaded PDF/image natively alongside the diagnostic framework as context
+
+## Getting started
+
+```bash
 npm install
-Run the App Locally: Start a local development server:
-
-bash
-Copy code
+cp .env.example .env
+# add your ANTHROPIC_API_KEY to .env
 npm run dev
-The quiz will be available at http://localhost:3000.
+```
 
-Usage
-To use the quiz:
+Open http://localhost:3000.
 
-Follow the instructions on each question.
-Answer all questions to view your score or results.
-Use the "Retake" option (if available) to try the quiz again.
-Project Structure
-Here’s an overview of the project’s main directories and files:
+## Project structure
 
-plaintext
-Copy code
-project-root/
-├── src/
-│   ├── components/           # Reusable components for questions and results
-│   ├── data/                 # Quiz questions and answers
-│   ├── utils/                # Utility functions for calculations
-│   ├── main.tsx              # Main entry point for the React app
-│   └── App.tsx               # Core app structure and routes
-├── public/                   # Static assets
-├── package.json              # Project dependencies and scripts
-├── tsconfig.json             # TypeScript configuration
-└── vite.config.ts            # Vite configuration
-Customization
-Questions and Answers: You can modify the questions and answers by editing the questions.tsx file in the src/data directory.
-Styling: Customize styles in src/index.css or by adding additional CSS files.
-Deployment
-Build for Production:
+```
+app/
+  page.tsx              # upload -> results single-page flow
+  api/analyze/route.ts  # backend route: file -> Claude API -> structured JSON
+components/
+  UploadForm.tsx         # drag-and-drop upload UI
+  ResultsView.tsx         # renders the structured diagnosis
+lib/
+  framework.ts            # the diagnostic framework (the product's core IP)
+  anthropic.ts             # Claude API call, prompt, JSON parsing
+  types.ts                  # zod schema for the analysis result
+```
 
-bash
-Copy code
-npm run build
-This will create an optimized build in the dist directory.
+## Updating the diagnostic framework
 
-Deploy to Hosting:
+`lib/framework.ts` holds the reference framework the model reasons from - channel-by-channel red flags, benchmark ranges, report-completeness expectations, and standard questions. This is the product's actual IP; keep it current as pilot diagnostics surface new patterns.
 
-Deploy to services like Vercel, Netlify, or Bolt.now.
-You can use Vercel or Netlify’s CLI tools or drag and drop the dist folder for quick deployment.
-Contributing
-Contributions are welcome! If you’d like to improve this project, feel free to fork it and submit a pull request.
+## Notes
 
-Fork the repo.
-Create your feature branch (git checkout -b feature/AmazingFeature).
-Commit your changes (git commit -m 'Add some AmazingFeature').
-Push to the branch (git push origin feature/AmazingFeature).
-Open a pull request.
-License
-Distributed under the MIT License. See LICENSE for more information.
-
-Replace placeholders like your-username and your-repo-name with your GitHub username and repository name. This README should give a good overview of the project and guide users through setup, usage, and deployment. Let me know if you want additional sections!
+- Accepted uploads: PDF, PNG, JPEG, WEBP, up to 20MB.
+- The model is instructed to flag when no benchmark exists for a metric (common for CTV/DOOH/programmatic) rather than inventing one.
+- No database yet - each request is stateless; results are not persisted.
