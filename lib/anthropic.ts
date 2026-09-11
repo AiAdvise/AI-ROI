@@ -92,7 +92,7 @@ export async function analyzeMediaPlan(input: AnalyzeInput): Promise<AnalysisRes
     model: MODEL,
     max_tokens: 8000,
     system: SYSTEM_PROMPT,
-    output_config: { effort: "medium" },
+    output_config: { effort: "low" },
     messages: [
       {
         role: "user",
