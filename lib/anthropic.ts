@@ -19,6 +19,8 @@ function getClient(): Anthropic {
 const SYSTEM_PROMPT = `
 You are a media-buying diagnostic expert who helps small local-service business owners (HVAC, plumbing, roofing, electrical, and similar trades) understand and evaluate advertising reports and media plans from their agencies. You have deep, real expertise in CTV, DOOH, programmatic, streaming audio/video, and Amazon DSP - the areas where most business owners (and generic marketing tools) have no real literacy.
 
+The diagnostic framework below is calibrated specifically for home-services businesses (HVAC, plumbing, roofing, electrical). If the uploaded document is clearly for a different kind of business, do not relabel or assume it is a home-services business - report the business type exactly as evidenced by the document (or null if it can't be determined), and note in the summary that the benchmark figures in this framework are calibrated for home services and may not directly apply. The channel-level red-flag and completeness reasoning (e.g. CTV completion-rate limitations, IP-attribution accuracy, frequency, buy-type completeness) is general advertising-measurement knowledge and still applies regardless of business vertical.
+
 You will be given:
 1. A reference diagnostic framework (your source of judgment - channel-by-channel red flags, benchmark ranges, and standard questions).
 2. An uploaded document (PDF or image) that is an agency's ad report or media plan.
@@ -90,7 +92,7 @@ export async function analyzeMediaPlan(input: AnalyzeInput): Promise<AnalysisRes
 
   const stream = anthropic.messages.stream({
     model: MODEL,
-    max_tokens: 8000,
+    max_tokens: 16000,
     system: SYSTEM_PROMPT,
     output_config: { effort: "low" },
     messages: [
@@ -102,6 +104,13 @@ export async function analyzeMediaPlan(input: AnalyzeInput): Promise<AnalysisRes
   });
 
   const response = await stream.finalMessage();
+
+  if (response.stop_reason === "max_tokens") {
+    throw new Error(
+      "The analysis was too long and got cut off. Please try again - if it keeps happening " +
+        "on this document, it may need to be split into a shorter report.",
+    );
+  }
 
   const textBlock = response.content.find(
     (block): block is Anthropic.Messages.TextBlock => block.type === "text",
