@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { DIAGNOSTIC_FRAMEWORK } from "./framework";
 import { AnalysisResultSchema, type AnalysisResult } from "./types";
 
-const MODEL = "claude-opus-5";
+const MODEL = "claude-sonnet-5";
 
 let client: Anthropic | null = null;
 
