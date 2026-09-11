@@ -8,8 +8,23 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#14171f",
-        paper: "#faf9f6",
+        ink: "#1c2434",
+        "ink-soft": "#3d465a",
+        paper: "#faf8f4",
+        "paper-raised": "#ffffff",
+        line: "#e4e0d7",
+        accent: "#b3541e",
+        "accent-soft": "#fdf1e7",
+        severe: "#9f2b1f",
+        "severe-soft": "#fbebe9",
+        caution: "#95610f",
+        "caution-soft": "#fbf1e0",
+        good: "#3f6b4a",
+        "good-soft": "#eaf2ec",
+      },
+      fontFamily: {
+        serif: ["var(--font-serif)", "Georgia", "serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
     },
   },

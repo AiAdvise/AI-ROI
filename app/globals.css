@@ -3,6 +3,28 @@
 @tailwind utilities;
 
 body {
-  background-color: #faf9f6;
-  color: #14171f;
+  background-color: #faf8f4;
+  color: #1c2434;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+@media print {
+  body {
+    background-color: #ffffff;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
+
+@keyframes loadbar {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(100%);
+  }
+  100% {
+    transform: translateX(300%);
+  }
 }
