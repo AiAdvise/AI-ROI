@@ -61,7 +61,19 @@ Not every gap is a red flag - some reflect genuine limitations of the inventory 
 - Average home services ticket size: $9,500-$18,000 (varies by trade)
 - Note: these benchmarks are almost entirely search/PPC-derived. No equivalent public benchmark culture exists yet for CTV/DOOH/streaming spend in this vertical. When a report's numbers fall outside these ranges, or when the buy is CTV/DOOH/programmatic (where no public benchmark exists), say so explicitly rather than forcing a comparison - flag it as a directional judgment call, not a hard benchmark violation.
 
-## Section 4: Master "Questions to Ask Your Agency" List
+## Section 4: Full-Funnel Coverage Model (Home Services)
+A healthy home services media mix covers three funnel stages. Each stage has a different job and should be judged by different metrics - judging an upper-funnel tactic by lower-funnel metrics (or vice versa) is itself a common analysis mistake.
+
+- **Upper funnel (branding/awareness):** CTV, YouTube, Social (awareness placements). Job: reach and frequency with the target audience, build brand recall. Right metrics: reach, frequency, completion rate. Wrong metrics to judge it by: clicks, calls, form fills - these tactics aren't built to drive immediate direct response, and expecting them to is a mismatch, not necessarily a sign the campaign is failing.
+- **Mid funnel (consideration):** Social engagement, display retargeting. Job: keep the brand present for people who've shown some interest, nurture them toward action. Right metrics: engagement rate, retargeting reach/frequency, site revisits.
+- **Lower funnel (conversion/CTA):** SEM (Search), Performance Max (PMax), Local Services Ads (LSA), direct-response Social, direct-response Display/retargeting. Job: capture people who are ready to buy right now and convert them into a call or form fill. Right metrics: calls, form fills, cost-per-lead - these are the tactics that should be held against the CPL benchmarks in Section 3.
+
+**Diagnostic logic:**
+- Classify every channel found in the report into upper/mid/lower funnel (or note if a channel's role is ambiguous from the report alone).
+- If the report's spend is concentrated in upper/mid-funnel tactics with little or no lower-funnel presence, and conversions (calls, form fills) are weak or absent, do not conclude the campaign has "no lower-funnel coverage" - the report you're looking at may only be part of the business's full marketing picture. Instead, flag the pattern and ask directly: "Are you running Search (SEM), Performance Max (PMax), or Local Services Ads (LSA) - through this agency or elsewhere - that isn't shown in this report? Those are typically the tactics responsible for actual calls and form fills, and their absence would explain weak direct-response numbers here." Always include a version of this question whenever the report itself shows an upper/mid-funnel-heavy mix without a visible lower-funnel component.
+- Separately, whenever the report DOES show real lower-funnel spend or activity (SEM, LSA, PMax, direct-response social/display) but conversions are still weak, ask about the landing experience rather than assuming the targeting is at fault: "Does your website make it fast and easy to call or fill out a form in one or two steps from this ad? A high-friction landing page or contact process can suppress conversions even when lower-funnel targeting itself is working correctly." This is a real, common failure point that has nothing to do with media buying and everything to do with the site the ads point to - don't let it get attributed to the wrong cause.
+
+## Section 5: Master "Questions to Ask Your Agency" List
 Measurement & Attribution:
 - How exactly is [metric] measured, and what's the underlying methodology?
 - What's the match rate or confidence level behind this number?
@@ -77,7 +89,7 @@ Strategy & Fit:
 - What would you change if the budget were doubled? Halved?
 - What's not working, and what have you already adjusted because of it?
 
-## Section 5: Glossary (plain language)
+## Section 6: Glossary (plain language)
 - VTR (View-Through Rate): % of viewers who watched an ad to completion.
 - Household Visits: a website visit believed to be linked to a household that saw a CTV ad, usually via IP matching.
 - Frequency: average number of times the same viewer/household saw an ad.
@@ -85,4 +97,7 @@ Strategy & Fit:
 - DOOH: Digital Out-of-Home - digital screens in public places (billboards, transit, retail).
 - Closed-loop attribution: when the same platform that shows the ad also tracks the purchase (e.g. Amazon DSP), removing most identity-matching uncertainty.
 - Walled garden: a platform (e.g. certain streaming services) that restricts what performance data it shares externally.
+- Funnel (upper/mid/lower): shorthand for how close a tactic is to driving an immediate action. Upper-funnel (CTV, YouTube, awareness Social) builds awareness; mid-funnel (Social engagement, retargeting) keeps a brand present; lower-funnel (SEM, PMax, LSA, direct-response Social/Display) is built to convert someone into a call or lead right now.
+- LSA (Local Services Ads): Google's pay-per-lead ad product built specifically for local service businesses (plumbers, electricians, HVAC, etc.) - appears above regular search results, often billed per qualified lead rather than per click.
+- PMax (Performance Max): a Google Ads campaign type that automatically places ads across Search, YouTube, Display, Maps, and Gmail from a single campaign, optimizing toward a stated goal (e.g. leads or calls).
 `.trim();
