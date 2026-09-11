@@ -201,6 +201,34 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
         )}
       </div>
 
+      <div className="mt-12">
+        <SectionHeading eyebrow="What a media buyer would suggest" title="Recommendations" />
+        {result.recommendations.length === 0 ? (
+          <p className="text-sm text-ink-soft">
+            No specific recommendations - nothing in this report points to a concrete, grounded
+            change to suggest.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {result.recommendations.map((r, i) => (
+              <div
+                key={i}
+                className="rounded-lg border border-line border-l-4 border-l-good bg-paper-raised p-4"
+              >
+                <h3 className="font-medium text-ink">{r.title}</h3>
+                <p className="text-sm text-ink mt-2 leading-relaxed font-medium">
+                  {r.recommendation}
+                </p>
+                <p className="text-sm text-ink-soft mt-1.5 leading-relaxed">{r.reasoning}</p>
+                {r.relatedChannel && (
+                  <p className="text-xs mt-2 text-ink-soft/70">Channel: {r.relatedChannel}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <div className="mt-12 mb-4 rounded-2xl border border-accent/20 bg-accent-soft p-6 sm:p-8 print:border-line print:bg-white">
         <SectionHeading eyebrow="Bring this to your next call" title="Questions to ask your agency" />
         <ol className="space-y-4">
