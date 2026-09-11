@@ -12,7 +12,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
 
-  async function handleSubmit(file: File, trade: string | null) {
+  async function handleSubmit(file: File, trade: string | null, spendNotes: string | null) {
     setStatus("analyzing");
     setError(null);
     setResult(null);
@@ -21,6 +21,7 @@ export default function Home() {
       const formData = new FormData();
       formData.append("file", file);
       if (trade) formData.append("trade", trade);
+      if (spendNotes) formData.append("spendNotes", spendNotes);
 
       const res = await fetch("/api/analyze", {
         method: "POST",

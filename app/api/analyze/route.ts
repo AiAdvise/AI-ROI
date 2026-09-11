@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
 
   const file = formData.get("file");
   const trade = formData.get("trade");
+  const spendNotes = formData.get("spendNotes");
 
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
@@ -49,6 +50,10 @@ export async function POST(req: NextRequest) {
       mediaType: accepted.mediaType,
       isPdf: accepted.isPdf,
       trade: typeof trade === "string" && trade.trim() ? trade.trim() : null,
+      spendNotes:
+        typeof spendNotes === "string" && spendNotes.trim()
+          ? spendNotes.trim().slice(0, 500)
+          : null,
     });
 
     return NextResponse.json({ result });

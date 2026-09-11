@@ -29,9 +29,17 @@ Your job:
 - Extract the channel mix, spend, targeting details, and reported KPIs/attribution claims from the document.
 - Apply the diagnostic framework to those specific numbers - do not give generic advice. Reference the business's actual figures.
 - Distinguish between a genuine red flag and a metric that's simply a known limitation of the buy type (see the framework's completeness checklist).
-- Where the framework has no benchmark for a given channel (e.g. most CTV/DOOH/programmatic metrics), say so explicitly rather than inventing a number - use "no_benchmark_available" rather than fabricating a range.
-- Be specific and grounded. Never invent numbers that are not in the document or the framework.
+- Be specific and grounded. Never invent numbers that are not in the document, the framework, or explicitly provided by the business owner.
 - Write in plain English a business owner with no ad-industry background can understand. Avoid jargon unless you define it inline.
+
+For each benchmark comparison, use the assessment value that matches the actual situation - these are two different things and matter to distinguish clearly for the reader:
+- "no_benchmark_available": no meaningful industry benchmark exists for this metric at all (e.g. CTV/DOOH completion rate, frequency - these aren't data gaps, they're just not useful comparison points on their own).
+- "insufficient_data": a real benchmark DOES exist (e.g. a CPL figure from the framework), but the report itself doesn't provide the numbers needed to calculate the comparable figure (most commonly: no spend data). Say plainly in the commentary what's missing and that the benchmark could be applied if that number were known.
+
+The business owner may separately provide what they actually spent, since agency reports frequently omit this (see below). If they do:
+- If they give a breakdown by channel/tactic, calculate per-channel efficiency (cost-per-click, cost-per-call, cost-per-visit, etc.) using that channel's own reported conversion counts from the document, and compare those to the framework's benchmarks where applicable.
+- If they only give one total figure covering multiple channels, calculate a single blended efficiency metric across all reported conversions combined, and label it clearly as a blended, cross-channel figure - do not split a lump sum across channels yourself or imply a channel-level number you weren't given.
+- These are channel/campaign cost-efficiency figures only. Do not treat them as proof of overall business impact (total revenue, jobs booked, etc.) - that would require data this tool doesn't collect and can't validate.
 
 Reference diagnostic framework:
 <framework>
@@ -50,7 +58,7 @@ Respond with ONLY a single JSON object - no markdown fences, no commentary befor
   },
   "plainEnglishSummary": string,
   "redFlags": [ { "title": string, "severity": "high" | "medium" | "low", "reasoning": string, "relatedChannel": string | null } ],
-  "benchmarkComparisons": [ { "metric": string, "reportedValue": string, "benchmarkRange": string, "assessment": "above" | "within" | "below" | "no_benchmark_available", "commentary": string } ],
+  "benchmarkComparisons": [ { "metric": string, "reportedValue": string, "benchmarkRange": string, "assessment": "above" | "within" | "below" | "no_benchmark_available" | "insufficient_data", "commentary": string } ],
   "questionsToAsk": [ { "question": string, "whyItMatters": string, "relatedRedFlag": string | null } ],
   "overallAssessment": "looks_reasonable" | "some_concerns" | "significant_concerns"
 }
@@ -63,6 +71,7 @@ export interface AnalyzeInput {
   mediaType: string;
   isPdf: boolean;
   trade: string | null;
+  spendNotes: string | null;
 }
 
 export async function analyzeMediaPlan(input: AnalyzeInput): Promise<AnalysisResult> {
@@ -86,9 +95,21 @@ export async function analyzeMediaPlan(input: AnalyzeInput): Promise<AnalysisRes
         },
       };
 
-  const instructionText = input.trade
-    ? `The business owner identifies their trade as: ${input.trade}. Use this to select the most relevant benchmarks from the framework. Analyze the attached agency report/media plan now and return the JSON object described in your instructions.`
-    : `Analyze the attached agency report/media plan now and return the JSON object described in your instructions.`;
+  const contextLines: string[] = [];
+  if (input.trade) {
+    contextLines.push(
+      `The business owner identifies their trade as: ${input.trade}. Use this to select the most relevant benchmarks from the framework.`,
+    );
+  }
+  if (input.spendNotes) {
+    contextLines.push(
+      `The business owner separately reports what they actually spent (the document itself may or may not include this): "${input.spendNotes}". Use this exactly as instructed above - per-channel if broken down, blended if a single total, and only for channel/campaign cost-efficiency, never as proof of business outcomes.`,
+    );
+  }
+  contextLines.push(
+    "Analyze the attached agency report/media plan now and return the JSON object described in your instructions.",
+  );
+  const instructionText = contextLines.join("\n\n");
 
   const stream = anthropic.messages.stream({
     model: MODEL,
