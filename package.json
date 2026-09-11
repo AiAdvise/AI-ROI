@@ -20,6 +20,7 @@
     "@types/node": "^22.18.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.1",
+    "@netlify/plugin-nextjs": "^5.13.5",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.38.0",
     "eslint-config-next": "^15.5.4",
