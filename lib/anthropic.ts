@@ -46,7 +46,7 @@ Reference diagnostic framework:
 ${DIAGNOSTIC_FRAMEWORK}
 </framework>
 
-Respond with ONLY a single JSON object - no markdown fences, no commentary before or after - matching exactly this shape:
+Respond with ONLY a single JSON object - no markdown fences, no commentary before or after, no closing remarks or offers to help further once the object ends - matching exactly this shape:
 
 {
   "documentSummary": {
@@ -156,10 +156,53 @@ function extractJson(text: string): unknown {
   try {
     return JSON.parse(trimmed);
   } catch {
-    const match = trimmed.match(/\{[\s\S]*\}/);
-    if (match) {
-      return JSON.parse(match[0]);
+    const objectText = extractFirstJsonObject(trimmed);
+    if (objectText) {
+      return JSON.parse(objectText);
     }
     throw new Error("Could not locate JSON in model response");
   }
+}
+
+/**
+ * Finds the first top-level {...} object in text, correctly tracking string
+ * state so braces inside string values (or trailing commentary after the
+ * object) don't throw off the match - unlike a greedy regex.
+ */
+function extractFirstJsonObject(text: string): string | null {
+  const start = text.indexOf("{");
+  if (start === -1) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escapeNext = false;
+
+  for (let i = start; i < text.length; i++) {
+    const char = text[i];
+
+    if (escapeNext) {
+      escapeNext = false;
+      continue;
+    }
+    if (char === "\\") {
+      escapeNext = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+
+    if (char === "{") {
+      depth++;
+    } else if (char === "}") {
+      depth--;
+      if (depth === 0) {
+        return text.slice(start, i + 1);
+      }
+    }
+  }
+
+  return null;
 }
