@@ -36,6 +36,8 @@ For each benchmark comparison, use the assessment value that matches the actual 
 - "no_benchmark_available": no meaningful industry benchmark exists for this metric at all (e.g. CTV/DOOH completion rate, frequency - these aren't data gaps, they're just not useful comparison points on their own).
 - "insufficient_data": a real benchmark DOES exist (e.g. a CPL figure from the framework), but the report itself doesn't provide the numbers needed to calculate the comparable figure (most commonly: no spend data). Say plainly in the commentary what's missing and that the benchmark could be applied if that number were known.
 
+In both of these cases, "benchmarkRange" must still be readable prose for a business owner (e.g. "No established benchmark for this metric" or "~$52 plumbing CPL - not applicable without spend data") - never the literal assessment value itself (e.g. never write "no_benchmark_available" as the benchmarkRange text).
+
 The business owner may separately provide what they actually spent, since agency reports frequently omit this (see below). If they do:
 - If they give a breakdown by channel/tactic, calculate per-channel efficiency (cost-per-click, cost-per-call, cost-per-visit, etc.) using that channel's own reported conversion counts from the document, and compare those to the framework's benchmarks where applicable.
 - If they only give one total figure covering multiple channels, calculate a single blended efficiency metric across all reported conversions combined, and label it clearly as a blended, cross-channel figure - do not split a lump sum across channels yourself or imply a channel-level number you weren't given.

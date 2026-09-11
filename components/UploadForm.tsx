@@ -49,7 +49,10 @@ export default function UploadForm({ onSubmit, disabled }: UploadFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-xl mx-auto">
+    <form
+      onSubmit={handleSubmit}
+      className="w-full max-w-xl mx-auto rounded-2xl border border-line bg-paper-raised p-6 sm:p-8 shadow-[0_1px_2px_rgba(28,36,52,0.04),0_8px_24px_rgba(28,36,52,0.05)]"
+    >
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -59,7 +62,7 @@ export default function UploadForm({ onSubmit, disabled }: UploadFormProps) {
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
         className={`cursor-pointer rounded-xl border-2 border-dashed p-10 text-center transition-colors ${
-          isDragging ? "border-ink bg-white" : "border-gray-300 bg-white/60"
+          isDragging ? "border-accent bg-accent-soft" : "border-line bg-paper hover:border-ink-soft/40"
         }`}
       >
         <input
@@ -71,29 +74,34 @@ export default function UploadForm({ onSubmit, disabled }: UploadFormProps) {
         />
         {file ? (
           <div>
-            <p className="font-medium">{file.name}</p>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="font-medium text-ink">{file.name}</p>
+            <p className="text-sm text-ink-soft mt-1">
               {(file.size / 1024 / 1024).toFixed(2)} MB - click to choose a different file
             </p>
           </div>
         ) : (
           <div>
-            <p className="font-medium">Drag and drop your agency&apos;s report or media plan</p>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="font-medium text-ink">
+              Drag and drop your agency&apos;s report or media plan
+            </p>
+            <p className="text-sm text-ink-soft mt-1">
               or click to browse - PDF, PNG, JPEG, or WEBP
             </p>
           </div>
         )}
       </div>
 
-      <div className="mt-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Your trade (optional - helps with benchmark accuracy)
+      <div className="mt-5">
+        <label className="block text-sm font-medium text-ink mb-1.5">
+          Your trade{" "}
+          <span className="font-normal text-ink-soft">
+            (optional - helps with benchmark accuracy)
+          </span>
         </label>
         <select
           value={trade}
           onChange={(e) => setTrade(e.target.value)}
-          className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         >
           <option value="">Select a trade...</option>
           {TRADES.map((t) => (
@@ -104,29 +112,34 @@ export default function UploadForm({ onSubmit, disabled }: UploadFormProps) {
         </select>
       </div>
 
-      <div className="mt-4">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          What did you actually spend? (optional - most agency reports leave this out)
+      <div className="mt-5">
+        <label className="block text-sm font-medium text-ink mb-1.5">
+          What did you actually spend?{" "}
+          <span className="font-normal text-ink-soft">
+            (optional - most agency reports leave this out)
+          </span>
         </label>
         <textarea
           value={spendNotes}
           onChange={(e) => setSpendNotes(e.target.value)}
           rows={2}
           placeholder="e.g. &quot;$2,400 total&quot; or, if you know the breakdown, &quot;CTV: $1,500, SEM: $600, Pre-Roll: $300&quot;"
-          className="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         />
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-1.5 text-xs text-ink-soft">
           Enter whatever precision you actually have - a single total is fine. We&apos;ll only
           calculate what the numbers you give us support, never guess a per-channel split.
         </p>
       </div>
 
-      {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="mt-4 rounded-lg bg-severe-soft px-3 py-2 text-sm text-severe">{error}</p>
+      )}
 
       <button
         type="submit"
         disabled={disabled || !file}
-        className="mt-5 w-full rounded-md bg-ink px-4 py-3 font-medium text-white transition-opacity disabled:opacity-40"
+        className="mt-6 w-full rounded-lg bg-ink px-4 py-3 font-medium text-white transition-colors hover:bg-ink/90 disabled:opacity-40 disabled:hover:bg-ink"
       >
         {disabled ? "Analyzing..." : "Diagnose my report"}
       </button>

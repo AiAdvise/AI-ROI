@@ -56,45 +56,74 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen px-4 py-16">
-      <div className="max-w-3xl mx-auto text-center mb-10">
-        <h1 className="text-3xl font-bold tracking-tight">Media Plan Diagnostic</h1>
-        <p className="mt-3 text-gray-600">
-          Upload your agency&apos;s ad report or media plan and get a plain-English diagnosis:
-          what&apos;s reasonable, what&apos;s missing, and exactly what to ask your agency.
-        </p>
-      </div>
-
-      {status !== "done" && (
-        <UploadForm onSubmit={handleSubmit} disabled={status === "analyzing"} />
-      )}
-
-      {status === "analyzing" && (
-        <p className="mt-6 text-center text-sm text-gray-500">
-          Reading your report and comparing it against the diagnostic framework - this can take
-          up to a minute...
-        </p>
-      )}
-
-      {status === "error" && error && (
-        <div className="max-w-xl mx-auto mt-6 rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {error}
+    <div className="min-h-screen">
+      <header className="no-print border-b border-line bg-paper-raised">
+        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+          <span className="font-serif text-lg font-semibold tracking-tight text-ink">
+            Media Plan Diagnostic
+          </span>
+          <span className="hidden sm:block text-xs font-medium uppercase tracking-widest text-ink-soft">
+            Ad Spend Audit
+          </span>
         </div>
-      )}
+      </header>
 
-      {status === "done" && result && (
-        <div className="mt-4">
-          <div className="max-w-3xl mx-auto mb-6 flex justify-end">
-            <button
-              onClick={reset}
-              className="text-sm font-medium text-gray-600 underline underline-offset-4"
-            >
-              Analyze another report
-            </button>
+      <main className="px-4 py-14 sm:py-20">
+        {status !== "done" && (
+          <div className="max-w-2xl mx-auto text-center mb-10">
+            <h1 className="font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-ink text-balance">
+              Is your agency&apos;s report actually telling you anything?
+            </h1>
+            <p className="mt-4 text-ink-soft leading-relaxed">
+              Upload the ad report or media plan your agency sent you. We&apos;ll diagnose it
+              against a real media-buying framework: what&apos;s reasonable, what&apos;s missing,
+              and exactly what to ask your agency at your next call.
+            </p>
           </div>
-          <ResultsView result={result} />
-        </div>
-      )}
-    </main>
+        )}
+
+        {status !== "done" && (
+          <UploadForm onSubmit={handleSubmit} disabled={status === "analyzing"} />
+        )}
+
+        {status === "analyzing" && (
+          <div className="mt-8 flex flex-col items-center gap-3">
+            <span className="h-1.5 w-40 overflow-hidden rounded-full bg-line">
+              <span className="block h-full w-1/3 animate-[loadbar_1.1s_ease-in-out_infinite] rounded-full bg-accent" />
+            </span>
+            <p className="text-center text-sm text-ink-soft">
+              Reading your report and comparing it against the diagnostic framework - this can
+              take up to a minute.
+            </p>
+          </div>
+        )}
+
+        {status === "error" && error && (
+          <div className="max-w-xl mx-auto mt-6 rounded-lg border border-severe/20 bg-severe-soft p-4 text-sm text-severe">
+            {error}
+          </div>
+        )}
+
+        {status === "done" && result && (
+          <div className="mt-2">
+            <div className="no-print max-w-3xl mx-auto mb-6 flex items-center justify-between">
+              <button
+                onClick={reset}
+                className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
+              >
+                &larr; Analyze another report
+              </button>
+              <button
+                onClick={() => window.print()}
+                className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
+              >
+                Print / save as PDF
+              </button>
+            </div>
+            <ResultsView result={result} />
+          </div>
+        )}
+      </main>
+    </div>
   );
 }

@@ -1,9 +1,9 @@
 import type { AnalysisResult } from "@/lib/types";
 
-const SEVERITY_STYLES: Record<string, string> = {
-  high: "border-red-300 bg-red-50 text-red-800",
-  medium: "border-amber-300 bg-amber-50 text-amber-800",
-  low: "border-gray-300 bg-gray-50 text-gray-700",
+const SEVERITY_META: Record<string, { label: string; border: string; badge: string }> = {
+  high: { label: "High", border: "border-l-severe", badge: "bg-severe-soft text-severe" },
+  medium: { label: "Medium", border: "border-l-caution", badge: "bg-caution-soft text-caution" },
+  low: { label: "Low", border: "border-l-line", badge: "bg-paper text-ink-soft" },
 };
 
 const ASSESSMENT_LABELS: Record<string, string> = {
@@ -14,150 +14,196 @@ const ASSESSMENT_LABELS: Record<string, string> = {
   insufficient_data: "Can't calculate - report is missing data",
 };
 
-const OVERALL_STYLES: Record<string, { label: string; className: string }> = {
-  looks_reasonable: { label: "Looks reasonable", className: "bg-green-100 text-green-800" },
-  some_concerns: { label: "Some concerns", className: "bg-amber-100 text-amber-800" },
-  significant_concerns: { label: "Significant concerns", className: "bg-red-100 text-red-800" },
+const OVERALL_META: Record<string, { label: string; className: string }> = {
+  looks_reasonable: { label: "Looks reasonable", className: "bg-white/15 text-white" },
+  some_concerns: { label: "Some concerns", className: "bg-caution-soft text-caution" },
+  significant_concerns: { label: "Significant concerns", className: "bg-severe-soft text-severe" },
 };
 
+function benchmarkRangeText(b: AnalysisResult["benchmarkComparisons"][number]): string {
+  // Defensive fallback in case the model puts the raw assessment value in
+  // benchmarkRange instead of readable prose - never show a raw enum to the user.
+  if (b.benchmarkRange in ASSESSMENT_LABELS) {
+    return ASSESSMENT_LABELS[b.benchmarkRange];
+  }
+  return b.benchmarkRange;
+}
+
+function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
+  return (
+    <div className="mb-4">
+      <p className="text-xs font-semibold uppercase tracking-widest text-accent">{eyebrow}</p>
+      <h2 className="font-serif text-2xl font-semibold text-ink mt-1">{title}</h2>
+    </div>
+  );
+}
+
 export default function ResultsView({ result }: { result: AnalysisResult }) {
-  const overall = OVERALL_STYLES[result.overallAssessment];
+  const overall = OVERALL_META[result.overallAssessment];
   const { documentSummary } = result;
 
   return (
-    <div className="w-full max-w-3xl mx-auto space-y-10">
-      <section>
-        <div className="flex items-center gap-3 mb-3">
-          <h2 className="text-xl font-semibold">Summary</h2>
-          <span className={`text-xs font-medium px-2 py-1 rounded-full ${overall.className}`}>
+    <div className="w-full max-w-3xl mx-auto">
+      <div className="rounded-2xl bg-ink px-6 py-8 sm:px-10 sm:py-10 print:bg-white print:border print:border-line">
+        <p className="text-xs font-semibold uppercase tracking-widest text-white/50 print:text-ink-soft">
+          Diagnostic Summary
+        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-white print:text-ink">
+            {documentSummary.businessType ?? "Media Plan Review"}
+          </h1>
+          <span
+            className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 ${overall.className}`}
+          >
             {overall.label}
           </span>
         </div>
-        <p className="text-gray-800 leading-relaxed whitespace-pre-line">
+        <p className="mt-4 text-white/85 leading-relaxed print:text-ink">
           {result.plainEnglishSummary}
         </p>
 
-        <dl className="mt-5 grid grid-cols-2 gap-4 text-sm">
-          {documentSummary.businessType && (
-            <div>
-              <dt className="text-gray-500">Business type</dt>
-              <dd className="font-medium">{documentSummary.businessType}</dd>
-            </div>
-          )}
+        <dl className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm border-t border-white/15 pt-5 print:border-line">
           {documentSummary.reportingPeriod && (
             <div>
-              <dt className="text-gray-500">Reporting period</dt>
-              <dd className="font-medium">{documentSummary.reportingPeriod}</dd>
+              <dt className="text-white/50 print:text-ink-soft">Reporting period</dt>
+              <dd className="font-medium text-white print:text-ink mt-0.5">
+                {documentSummary.reportingPeriod}
+              </dd>
             </div>
           )}
           {documentSummary.totalSpend && (
             <div>
-              <dt className="text-gray-500">Total spend</dt>
-              <dd className="font-medium">{documentSummary.totalSpend}</dd>
+              <dt className="text-white/50 print:text-ink-soft">Total spend</dt>
+              <dd className="font-medium text-white print:text-ink mt-0.5">
+                {documentSummary.totalSpend}
+              </dd>
             </div>
           )}
         </dl>
+      </div>
 
-        {documentSummary.channelMix.length > 0 && (
-          <div className="mt-5 overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="text-left text-gray-500 border-b">
-                  <th className="py-2 pr-4">Channel</th>
-                  <th className="py-2 pr-4">Spend</th>
-                  <th className="py-2 pr-4">% of total</th>
-                  <th className="py-2">Notes</th>
+      {documentSummary.channelMix.length > 0 && (
+        <div className="mt-6 overflow-x-auto rounded-xl border border-line bg-paper-raised">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="text-left text-ink-soft border-b border-line">
+                <th className="py-3 px-4 font-medium">Channel</th>
+                <th className="py-3 px-4 font-medium">Spend</th>
+                <th className="py-3 px-4 font-medium">% of total</th>
+                <th className="py-3 px-4 font-medium">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {documentSummary.channelMix.map((c, i) => (
+                <tr key={i} className="border-b border-line last:border-0">
+                  <td className="py-3 px-4 font-medium text-ink">{c.channel}</td>
+                  <td className="py-3 px-4 text-ink-soft">{c.spend ?? "-"}</td>
+                  <td className="py-3 px-4 text-ink-soft">{c.percentOfTotal ?? "-"}</td>
+                  <td className="py-3 px-4 text-ink-soft">{c.notes ?? "-"}</td>
                 </tr>
-              </thead>
-              <tbody>
-                {documentSummary.channelMix.map((c, i) => (
-                  <tr key={i} className="border-b last:border-0">
-                    <td className="py-2 pr-4 font-medium">{c.channel}</td>
-                    <td className="py-2 pr-4">{c.spend ?? "-"}</td>
-                    <td className="py-2 pr-4">{c.percentOfTotal ?? "-"}</td>
-                    <td className="py-2 text-gray-600">{c.notes ?? "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {documentSummary.reportedKpis.length > 0 && (
-          <div className="mt-5">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Reported KPIs</h3>
-            <ul className="text-sm space-y-1">
-              {documentSummary.reportedKpis.map((k, i) => (
-                <li key={i}>
-                  <span className="font-medium">{k.name}:</span> {k.value}
-                  {k.channel ? ` (${k.channel})` : ""}
-                </li>
               ))}
-            </ul>
-          </div>
-        )}
-      </section>
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      <section>
-        <h2 className="text-xl font-semibold mb-3">Red flags</h2>
+      {documentSummary.reportedKpis.length > 0 && (
+        <div className="mt-4 rounded-xl border border-line bg-paper-raised p-4">
+          <h3 className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2">
+            Reported KPIs
+          </h3>
+          <ul className="text-sm space-y-1">
+            {documentSummary.reportedKpis.map((k, i) => (
+              <li key={i} className="text-ink-soft">
+                <span className="font-medium text-ink">{k.name}:</span> {k.value}
+                {k.channel ? ` (${k.channel})` : ""}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div className="mt-12">
+        <SectionHeading eyebrow="What we found" title="Findings" />
         {result.redFlags.length === 0 ? (
-          <p className="text-sm text-gray-500">No red flags identified.</p>
+          <p className="text-sm text-ink-soft">No red flags identified.</p>
         ) : (
           <div className="space-y-3">
-            {result.redFlags.map((flag, i) => (
-              <div key={i} className={`rounded-lg border p-4 ${SEVERITY_STYLES[flag.severity]}`}>
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="font-medium">{flag.title}</h3>
-                  <span className="text-xs uppercase tracking-wide font-semibold shrink-0">
-                    {flag.severity}
-                  </span>
+            {result.redFlags.map((flag, i) => {
+              const meta = SEVERITY_META[flag.severity];
+              return (
+                <div
+                  key={i}
+                  className={`rounded-lg border border-line border-l-4 bg-paper-raised p-4 ${meta.border}`}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-baseline gap-2">
+                      <span className="font-serif text-sm text-ink-soft/70">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <h3 className="font-medium text-ink">{flag.title}</h3>
+                    </div>
+                    <span
+                      className={`text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0 ${meta.badge}`}
+                    >
+                      {meta.label}
+                    </span>
+                  </div>
+                  <p className="text-sm text-ink-soft mt-2 leading-relaxed">{flag.reasoning}</p>
+                  {flag.relatedChannel && (
+                    <p className="text-xs mt-2 text-ink-soft/70">
+                      Channel: {flag.relatedChannel}
+                    </p>
+                  )}
                 </div>
-                <p className="text-sm mt-1">{flag.reasoning}</p>
-                {flag.relatedChannel && (
-                  <p className="text-xs mt-2 opacity-70">Channel: {flag.relatedChannel}</p>
-                )}
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
-      </section>
+      </div>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-3">Benchmark comparisons</h2>
+      <div className="mt-12">
+        <SectionHeading eyebrow="How the numbers stack up" title="Benchmark comparisons" />
         {result.benchmarkComparisons.length === 0 ? (
-          <p className="text-sm text-gray-500">No benchmark comparisons available.</p>
+          <p className="text-sm text-ink-soft">No benchmark comparisons available.</p>
         ) : (
           <div className="space-y-3">
             {result.benchmarkComparisons.map((b, i) => (
-              <div key={i} className="rounded-lg border border-gray-200 bg-white p-4">
+              <div key={i} className="rounded-lg border border-line bg-paper-raised p-4">
                 <div className="flex items-center justify-between gap-3">
-                  <h3 className="font-medium">{b.metric}</h3>
-                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-gray-100 text-gray-700 shrink-0">
+                  <h3 className="font-medium text-ink">{b.metric}</h3>
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-paper text-ink-soft shrink-0">
                     {ASSESSMENT_LABELS[b.assessment]}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 mt-1">
-                  Reported: <span className="font-medium">{b.reportedValue}</span> - Benchmark:{" "}
-                  <span className="font-medium">{b.benchmarkRange}</span>
+                <p className="text-sm text-ink-soft mt-1.5">
+                  Reported: <span className="font-medium text-ink">{b.reportedValue}</span> -
+                  Benchmark:{" "}
+                  <span className="font-medium text-ink">{benchmarkRangeText(b)}</span>
                 </p>
-                <p className="text-sm text-gray-800 mt-2">{b.commentary}</p>
+                <p className="text-sm text-ink-soft mt-2 leading-relaxed">{b.commentary}</p>
               </div>
             ))}
           </div>
         )}
-      </section>
+      </div>
 
-      <section>
-        <h2 className="text-xl font-semibold mb-3">Questions to ask your agency</h2>
-        <ol className="space-y-3 list-decimal list-inside">
+      <div className="mt-12 mb-4 rounded-2xl border border-accent/20 bg-accent-soft p-6 sm:p-8 print:border-line print:bg-white">
+        <SectionHeading eyebrow="Bring this to your next call" title="Questions to ask your agency" />
+        <ol className="space-y-4">
           {result.questionsToAsk.map((q, i) => (
-            <li key={i} className="text-sm">
-              <span className="font-medium text-gray-900">{q.question}</span>
-              <p className="text-gray-600 mt-1 ml-5">{q.whyItMatters}</p>
+            <li key={i} className="flex gap-3">
+              <span className="font-serif text-sm font-semibold text-accent shrink-0 mt-0.5">
+                {i + 1}.
+              </span>
+              <div>
+                <p className="font-medium text-ink">{q.question}</p>
+                <p className="text-sm text-ink-soft mt-1">{q.whyItMatters}</p>
+              </div>
             </li>
           ))}
         </ol>
-      </section>
+      </div>
     </div>
   );
 }
