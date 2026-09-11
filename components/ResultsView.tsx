@@ -11,6 +11,7 @@ const ASSESSMENT_LABELS: Record<string, string> = {
   within: "Within normal range",
   below: "Below benchmark",
   no_benchmark_available: "No benchmark available",
+  insufficient_data: "Can't calculate - report is missing data",
 };
 
 const OVERALL_STYLES: Record<string, { label: string; className: string }> = {

@@ -24,7 +24,7 @@ export const BenchmarkComparisonSchema = z.object({
   metric: z.string(),
   reportedValue: z.string(),
   benchmarkRange: z.string(),
-  assessment: z.enum(["above", "within", "below", "no_benchmark_available"]),
+  assessment: z.enum(["above", "within", "below", "no_benchmark_available", "insufficient_data"]),
   commentary: z.string(),
 });
 
