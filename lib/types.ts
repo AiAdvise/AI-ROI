@@ -34,6 +34,13 @@ export const AgencyQuestionSchema = z.object({
   relatedRedFlag: z.string().nullable(),
 });
 
+export const RecommendationSchema = z.object({
+  title: z.string(),
+  recommendation: z.string(),
+  reasoning: z.string(),
+  relatedChannel: z.string().nullable(),
+});
+
 export const AnalysisResultSchema = z.object({
   documentSummary: z.object({
     businessType: z.string().nullable(),
@@ -45,6 +52,7 @@ export const AnalysisResultSchema = z.object({
   plainEnglishSummary: z.string(),
   redFlags: z.array(RedFlagSchema),
   benchmarkComparisons: z.array(BenchmarkComparisonSchema),
+  recommendations: z.array(RecommendationSchema),
   questionsToAsk: z.array(AgencyQuestionSchema),
   overallAssessment: z.enum(["looks_reasonable", "some_concerns", "significant_concerns"]),
 });
