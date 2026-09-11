@@ -149,6 +149,13 @@ const styles = StyleSheet.create({
   },
   cardTitle: { fontFamily: "Helvetica-Bold", fontSize: 10.5, color: COLORS.ink, flexShrink: 1 },
   cardBody: { fontSize: 9.5, color: COLORS.inkSoft, lineHeight: 1.5 },
+  recommendationText: {
+    fontFamily: "Helvetica-Bold",
+    fontSize: 9.5,
+    color: COLORS.ink,
+    lineHeight: 1.5,
+    marginBottom: 4,
+  },
   cardMeta: { fontSize: 8.5, color: COLORS.inkSoft, marginTop: 4, opacity: 0.75 },
   table: { borderWidth: 1, borderColor: COLORS.line, borderRadius: 6, overflow: "hidden" },
   tableHeaderRow: {
@@ -291,11 +298,39 @@ export default function ReportPdfDocument({ result }: { result: AnalysisResult }
           )}
         </View>
 
-        <View style={styles.questionsBox} wrap={false}>
+        <View style={styles.section}>
+          <Text style={styles.sectionEyebrow}>What a media buyer would suggest</Text>
+          <Text style={styles.sectionTitle}>Recommendations</Text>
+          {result.recommendations.length === 0 ? (
+            <Text style={styles.cardBody}>
+              No specific recommendations - nothing in this report points to a concrete, grounded
+              change to suggest.
+            </Text>
+          ) : (
+            result.recommendations.map((r, i) => (
+              <View
+                key={i}
+                style={[styles.findingCard, { borderLeftColor: COLORS.good }]}
+                wrap={false}
+              >
+                <Text style={styles.cardTitle}>{r.title}</Text>
+                <Text style={[styles.recommendationText, { marginTop: 4 }]}>
+                  {r.recommendation}
+                </Text>
+                <Text style={styles.cardBody}>{r.reasoning}</Text>
+                {r.relatedChannel && (
+                  <Text style={styles.cardMeta}>Channel: {r.relatedChannel}</Text>
+                )}
+              </View>
+            ))
+          )}
+        </View>
+
+        <View style={styles.questionsBox}>
           <Text style={styles.sectionEyebrow}>Bring this to your next call</Text>
           <Text style={styles.sectionTitle}>Questions to ask your agency</Text>
           {result.questionsToAsk.map((q, i) => (
-            <View key={i} style={styles.questionRow}>
+            <View key={i} style={styles.questionRow} wrap={false}>
               <Text style={styles.questionNum}>{i + 1}.</Text>
               <View style={{ flex: 1 }}>
                 <Text style={styles.questionText}>{q.question}</Text>
