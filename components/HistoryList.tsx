@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { effectiveDate, monthLabel } from "@/lib/trends";
 
 const OVERALL_LABEL: Record<string, string> = {
@@ -21,7 +22,10 @@ export interface HistoryReportRow {
 }
 
 export default function HistoryList({ reports }: { reports: HistoryReportRow[] }) {
+  const router = useRouter();
   const [selected, setSelected] = useState<string[]>([]);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   function toggle(id: string) {
     setSelected((prev) => {
@@ -29,6 +33,26 @@ export default function HistoryList({ reports }: { reports: HistoryReportRow[] }
       if (prev.length >= 2) return [prev[1], id];
       return [...prev, id];
     });
+  }
+
+  async function handleDelete(id: string, label: string) {
+    if (!window.confirm(`Delete "${label}"? This can't be undone.`)) return;
+
+    setDeletingId(id);
+    setError(null);
+    try {
+      const res = await fetch(`/api/reports/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error ?? "Couldn't delete that report.");
+      }
+      setSelected((prev) => prev.filter((x) => x !== id));
+      router.refresh();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Couldn't delete that report.");
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   const canCompare = selected.length === 2;
@@ -42,37 +66,49 @@ export default function HistoryList({ reports }: { reports: HistoryReportRow[] }
         </p>
       )}
 
+      {error && <p className="mb-4 text-sm text-severe">{error}</p>}
+
       <ul className="divide-y divide-line rounded-lg border border-line bg-paper-raised">
-        {reports.map((r) => (
-          <li key={r.id} className="flex items-center gap-3 px-4 py-4">
-            <input
-              type="checkbox"
-              checked={selected.includes(r.id)}
-              onChange={() => toggle(r.id)}
-              className="h-4 w-4 shrink-0 accent-ink"
-              aria-label={`Select ${r.business_type ?? r.trade ?? "report"} from ${monthLabel(effectiveDate(r.reporting_period_start, r.created_at))} to compare`}
-            />
-            <Link
-              href={`/reports/${r.id}`}
-              className="flex flex-1 items-center justify-between gap-4 hover:opacity-70"
-            >
-              <div>
-                <p className="text-sm font-medium text-ink">
-                  {r.business_type ?? r.trade ?? "Media plan diagnostic"}
-                </p>
-                <p className="mt-0.5 text-xs text-ink-soft">
-                  {monthLabel(effectiveDate(r.reporting_period_start, r.created_at))}
-                  {r.reporting_period ? ` · ${r.reporting_period}` : ""}
-                </p>
-              </div>
-              <span className="shrink-0 text-xs font-medium text-ink-soft">
-                {r.overall_assessment
-                  ? OVERALL_LABEL[r.overall_assessment] ?? r.overall_assessment
-                  : ""}
-              </span>
-            </Link>
-          </li>
-        ))}
+        {reports.map((r) => {
+          const label = monthLabel(effectiveDate(r.reporting_period_start, r.created_at));
+          return (
+            <li key={r.id} className="flex items-center gap-3 px-4 py-4">
+              <input
+                type="checkbox"
+                checked={selected.includes(r.id)}
+                onChange={() => toggle(r.id)}
+                className="h-4 w-4 shrink-0 accent-ink"
+                aria-label={`Select ${r.business_type ?? r.trade ?? "report"} from ${label} to compare`}
+              />
+              <Link
+                href={`/reports/${r.id}`}
+                className="flex flex-1 items-center justify-between gap-4 hover:opacity-70"
+              >
+                <div>
+                  <p className="text-sm font-medium text-ink">
+                    {r.business_type ?? r.trade ?? "Media plan diagnostic"}
+                  </p>
+                  <p className="mt-0.5 text-xs text-ink-soft">
+                    {label}
+                    {r.reporting_period ? ` · ${r.reporting_period}` : ""}
+                  </p>
+                </div>
+                <span className="shrink-0 text-xs font-medium text-ink-soft">
+                  {r.overall_assessment
+                    ? OVERALL_LABEL[r.overall_assessment] ?? r.overall_assessment
+                    : ""}
+                </span>
+              </Link>
+              <button
+                onClick={() => handleDelete(r.id, r.business_type ?? r.trade ?? label)}
+                disabled={deletingId === r.id}
+                className="shrink-0 text-xs font-medium text-ink-soft underline underline-offset-4 hover:text-severe disabled:opacity-50"
+              >
+                {deletingId === r.id ? "Deleting…" : "Delete"}
+              </button>
+            </li>
+          );
+        })}
       </ul>
 
       {canCompare && (
