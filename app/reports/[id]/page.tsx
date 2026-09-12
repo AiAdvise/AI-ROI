@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ResultsView from "@/components/ResultsView";
 import ReportActions from "@/components/ReportActions";
+import AskAboutReport from "@/components/AskAboutReport";
 import { AnalysisResultSchema } from "@/lib/types";
 
 export default async function ReportDetailPage({
@@ -71,6 +72,9 @@ export default async function ReportDetailPage({
       <main className="px-4 py-14 sm:py-20">
         <div className="no-print max-w-3xl mx-auto mb-6 flex justify-end">
           <ReportActions result={parsed.data} />
+        </div>
+        <div className="max-w-3xl mx-auto mb-6">
+          <AskAboutReport reportId={report.id} />
         </div>
         <ResultsView result={parsed.data} />
       </main>
