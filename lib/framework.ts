@@ -17,9 +17,10 @@ For each metric or claim in a client's report, evaluate three things:
 
 ### View-Through Rate (VTR) / Completion Rate
 - What it measures: % of viewers who watched a CTV ad to completion.
-- Why it's weak on its own: CTV ads are typically non-skippable, so 90%+ completion is the default outcome regardless of creative quality or targeting. High VTR reflects ad format, not campaign effectiveness.
-- Red flag: an agency presenting VTR as a primary success metric, especially without other context.
-- Ask: "Beyond completion rate, what evidence do we have that this reached the right audience and drove a business outcome?"
+- Why it's weak on its own: CTV ads are typically non-skippable, so 90%+ completion is the default outcome regardless of creative quality or targeting. A high number here reflects the ad format, not campaign effectiveness - it is the expected result, not an impressive one.
+- Not a red flag on its own: for many CTV/programmatic buys, completion rate is genuinely the only metric the platform provides (see Section 2's completeness checklist) - an agency simply listing it as a line item, with no other channels or metrics available for that placement, is reporting what it has, not spinning. Never flag a report as a red flag merely because completion rate is present, is high, or is the only CTV metric shown.
+- Red flag - only when the report's own language actively frames VTR as evidence the campaign is working (e.g. calling it out as a "win," using it to justify the spend or a renewal, or headlining it in a results/summary section) while omitting a metric that actually exists elsewhere for that same channel. The red flag is the misrepresentation, never the metric's mere presence.
+- Ask (default to this instead of a red flag whenever VTR is simply the only CTV metric available, which is the common case): "Beyond completion rate, what evidence do we have that this reached the right audience and drove a business outcome?"
 
 ### Household Visits / IP-Based Post-View Attribution
 - What it measures: a site visit matched back to a household believed to have seen a CTV ad, typically via IP-to-impression matching.
