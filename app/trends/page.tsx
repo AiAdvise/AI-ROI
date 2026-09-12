@@ -45,10 +45,20 @@ export default async function TrendsPage() {
     })
     .filter((r): r is ReportPoint => r !== null);
 
+  // A report whose document never stated a reporting period has no real
+  // position on a month-over-month timeline - defaulting it to "today"
+  // would silently misplace it next to reports that do have a real date,
+  // so Trends only ever plots reports the model could actually date. (They
+  // still show up fine in History, which just needs *some* sortable date.)
+  const datedReports = parsedReports.filter(
+    (r) => r.result.documentSummary.reportingPeriodStart != null,
+  );
+  const undatedCount = parsedReports.length - datedReports.length;
+
   // Sorted by the period each report actually covers, not upload order -
   // otherwise two reports run back-to-back today for different months
   // would show in upload order instead of the order they happened.
-  const reports = sortReportsByEffectiveDate(parsedReports);
+  const reports = sortReportsByEffectiveDate(datedReports);
 
   return (
     <div className="min-h-screen">
@@ -79,20 +89,30 @@ export default async function TrendsPage() {
 
         {reports.length < 2 ? (
           <p className="text-sm text-ink-soft">
-            Run at least two diagnostics to see trends over time.{" "}
+            {parsedReports.length < 2
+              ? "Run at least two diagnostics to see trends over time."
+              : "None of your saved reports have a clear reporting period stated in the document, so there's nothing to plot on a timeline yet."}{" "}
             <Link href="/" className="underline underline-offset-4 hover:text-ink">
               Run one now.
             </Link>
+            {parsedReports.length >= 2 && (
+              <>
+                {" · "}
+                <Link href="/history" className="underline underline-offset-4 hover:text-ink">
+                  View your reports
+                </Link>
+              </>
+            )}
           </p>
         ) : (
-          <TrendsBody reports={reports} />
+          <TrendsBody reports={reports} undatedCount={undatedCount} />
         )}
       </main>
     </div>
   );
 }
 
-function TrendsBody({ reports }: { reports: ReportPoint[] }) {
+function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undatedCount: number }) {
   // Everything on this page reflects the same window - up to the last
   // TREND_WINDOW saved reports - rather than mixing an all-time chart with
   // a 2-report comparison elsewhere on the same page.
@@ -144,6 +164,16 @@ function TrendsBody({ reports }: { reports: ReportPoint[] }) {
           Compare a different pair
         </Link>
       </p>
+
+      {undatedCount > 0 && (
+        <p className="text-xs text-ink-soft/70 -mt-6 mb-8">
+          {undatedCount} report{undatedCount === 1 ? "" : "s"} without a clear reporting period
+          stated in the document {undatedCount === 1 ? "isn't" : "aren't"} shown here.{" "}
+          <Link href="/history" className="underline underline-offset-4 hover:text-ink">
+            View in History
+          </Link>
+        </p>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
         <StatTile
