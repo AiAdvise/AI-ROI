@@ -52,7 +52,7 @@ export default function ReportActions({ result }: { result: AnalysisResult }) {
       <button
         onClick={downloadPdf}
         disabled={downloadingPdf}
-        className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-ink/90 disabled:opacity-50"
+        className="rounded-lg bg-gradient-to-r from-brand-a via-brand-b to-brand-c bg-[length:160%_100%] bg-[position:0%_0%] px-4 py-2 text-sm font-medium text-white shadow-sm transition-[background-position,box-shadow] duration-300 hover:bg-[position:100%_0%] hover:shadow-md disabled:opacity-50 disabled:hover:bg-[position:0%_0%]"
       >
         {downloadingPdf ? "Preparing PDF..." : "Download PDF"}
       </button>

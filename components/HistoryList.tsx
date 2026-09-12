@@ -69,10 +69,14 @@ export default function HistoryList({ reports }: { reports: HistoryReportRow[] }
       {error && <p className="mb-4 text-sm text-severe">{error}</p>}
 
       <ul className="divide-y divide-line rounded-lg border border-line bg-paper-raised">
-        {reports.map((r) => {
+        {reports.map((r, i) => {
           const label = monthLabel(effectiveDate(r.reporting_period_start, r.created_at));
           return (
-            <li key={r.id} className="flex items-center gap-3 px-4 py-4">
+            <li
+              key={r.id}
+              className="flex items-center gap-3 px-4 py-4 opacity-0 animate-fadeInUp"
+              style={{ animationDelay: `${Math.min(i, 8) * 50}ms` }}
+            >
               <input
                 type="checkbox"
                 checked={selected.includes(r.id)}
@@ -117,7 +121,7 @@ export default function HistoryList({ reports }: { reports: HistoryReportRow[] }
             <span className="text-sm text-ink-soft">2 reports selected</span>
             <Link
               href={compareHref}
-              className="rounded-lg bg-ink px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-ink/90"
+              className="rounded-lg bg-gradient-to-r from-brand-a via-brand-b to-brand-c bg-[length:160%_100%] bg-[position:0%_0%] px-4 py-2 text-sm font-medium text-white shadow-sm transition-[background-position,box-shadow] duration-300 hover:bg-[position:100%_0%] hover:shadow-md"
             >
               Compare
             </Link>

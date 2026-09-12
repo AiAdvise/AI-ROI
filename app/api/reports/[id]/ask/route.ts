@@ -10,10 +10,12 @@ export const maxDuration = 30;
 // taken from client-supplied free text - so there's no open-ended prompt
 // surface here even though the button labels look conversational.
 const CANNED_QUESTIONS: Record<string, string> = {
-  why: "Looking at this report's findings, why is this happening? Explain the most likely reason in plain, simple terms.",
-  normal: "Is this normal for a home services business, or should I be concerned? Answer plainly.",
-  ask_agency:
-    "What's the single most important question I should ask my agency about this report, and why?",
+  next_step:
+    "Of everything in this report - the findings, the benchmark comparisons, and the recommendations - what is the single most important thing I should do first, and why that one over everything else?",
+  overcharged:
+    "Based on what this report actually shows, does it look like I'm getting fair value for what I'm spending, or does something here suggest I might be overpaying? Give me a direct, honest take, not a hedge.",
+  proof_it_works:
+    "Does anything in this report actually prove I'm getting more real customers or jobs booked, or is it mostly showing ad-platform activity (impressions, clicks, views) without proof of business impact? Be direct about which one it is.",
 };
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

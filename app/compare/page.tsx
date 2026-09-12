@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ComparisonView from "@/components/ComparisonView";
+import BrandMark from "@/components/BrandMark";
 import { AnalysisResultSchema } from "@/lib/types";
 import { effectiveDate } from "@/lib/trends";
 
@@ -54,8 +55,8 @@ export default async function ComparePage({
     <div className="min-h-screen">
       <header className="no-print border-b border-line bg-paper-raised">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="font-serif text-lg font-semibold tracking-tight text-ink">
-            Media Plan Diagnostic
+          <Link href="/">
+            <BrandMark className="text-lg" />
           </Link>
           <Link
             href="/history"

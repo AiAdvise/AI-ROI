@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import HistoryList from "@/components/HistoryList";
+import BrandMark from "@/components/BrandMark";
+import GradientBlobs from "@/components/GradientBlobs";
 import { effectiveDate } from "@/lib/trends";
 
 export default async function HistoryPage() {
@@ -34,11 +36,8 @@ export default async function HistoryPage() {
     <div className="min-h-screen">
       <header className="border-b border-line bg-paper-raised">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link
-            href="/"
-            className="font-serif text-lg font-semibold tracking-tight text-ink"
-          >
-            Media Plan Diagnostic
+          <Link href="/">
+            <BrandMark className="text-lg" />
           </Link>
           <div className="flex items-center gap-4">
             <Link
@@ -57,8 +56,9 @@ export default async function HistoryPage() {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-12">
-        <h1 className="font-serif text-2xl font-semibold tracking-tight text-ink mb-6">
+      <main className="relative max-w-4xl mx-auto px-4 py-12">
+        <GradientBlobs />
+        <h1 className="gradient-text font-serif text-3xl font-semibold tracking-tight mb-6">
           Report history
         </h1>
 

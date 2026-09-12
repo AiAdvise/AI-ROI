@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import UploadForm from "@/components/UploadForm";
 import ResultsView from "@/components/ResultsView";
 import ReportActions from "@/components/ReportActions";
+import BrandMark from "@/components/BrandMark";
+import GradientBlobs from "@/components/GradientBlobs";
+import Reveal from "@/components/Reveal";
 import { createClient } from "@/lib/supabase/client";
 import type { AnalysisResult } from "@/lib/types";
 
@@ -84,9 +87,7 @@ export default function Home() {
     <div className="min-h-screen">
       <header className="no-print border-b border-line bg-paper-raised">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <span className="font-serif text-lg font-semibold tracking-tight text-ink">
-            Media Plan Diagnostic
-          </span>
+          <BrandMark className="text-lg" />
           <div className="flex items-center gap-4">
             {userEmail && (
               <>
@@ -123,10 +124,11 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="px-4 py-14 sm:py-20">
+      <main className="relative px-4 py-14 sm:py-20">
+        {status !== "done" && <GradientBlobs />}
         {status !== "done" && (
           <div className="max-w-2xl mx-auto text-center mb-10">
-            <h1 className="font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-ink text-balance">
+            <h1 className="gradient-text font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-balance">
               Is your agency&apos;s report actually telling you anything?
             </h1>
             <p className="mt-4 text-ink-soft leading-relaxed">
@@ -138,7 +140,9 @@ export default function Home() {
         )}
 
         {status !== "done" && (
-          <UploadForm onSubmit={handleSubmit} disabled={status === "analyzing"} />
+          <Reveal delay={120}>
+            <UploadForm onSubmit={handleSubmit} disabled={status === "analyzing"} />
+          </Reveal>
         )}
 
         {status === "analyzing" && (

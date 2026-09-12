@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import ResultsView from "@/components/ResultsView";
 import ReportActions from "@/components/ReportActions";
 import AskAboutReport from "@/components/AskAboutReport";
+import BrandMark from "@/components/BrandMark";
+import Reveal from "@/components/Reveal";
 import { AnalysisResultSchema } from "@/lib/types";
 
 export default async function ReportDetailPage({
@@ -40,11 +42,8 @@ export default async function ReportDetailPage({
     <div className="min-h-screen">
       <header className="no-print border-b border-line bg-paper-raised">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link
-            href="/"
-            className="font-serif text-lg font-semibold tracking-tight text-ink"
-          >
-            Media Plan Diagnostic
+          <Link href="/">
+            <BrandMark className="text-lg" />
           </Link>
           <div className="flex items-center gap-4">
             <Link
@@ -74,7 +73,9 @@ export default async function ReportDetailPage({
           <ReportActions result={parsed.data} />
         </div>
         <div className="max-w-3xl mx-auto mb-6">
-          <AskAboutReport reportId={report.id} />
+          <Reveal>
+            <AskAboutReport reportId={report.id} />
+          </Reveal>
         </div>
         <ResultsView result={parsed.data} />
       </main>
