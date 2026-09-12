@@ -28,12 +28,20 @@ export default async function HistoryPage() {
           >
             Media Plan Diagnostic
           </Link>
-          <Link
-            href="/"
-            className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
-          >
-            New diagnostic
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link
+              href="/trends"
+              className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
+            >
+              Trends
+            </Link>
+            <Link
+              href="/"
+              className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
+            >
+              New diagnostic
+            </Link>
+          </div>
         </div>
       </header>
 

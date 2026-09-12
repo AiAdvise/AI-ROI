@@ -89,12 +89,20 @@ export default function Home() {
           </span>
           <div className="flex items-center gap-4">
             {userEmail && (
-              <Link
-                href="/history"
-                className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
-              >
-                History
-              </Link>
+              <>
+                <Link
+                  href="/trends"
+                  className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
+                >
+                  Trends
+                </Link>
+                <Link
+                  href="/history"
+                  className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
+                >
+                  History
+                </Link>
+              </>
             )}
             {userEmail ? (
               <button
