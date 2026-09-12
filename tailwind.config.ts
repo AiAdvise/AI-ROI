@@ -24,7 +24,7 @@ const config: Config = {
         // Decorative-only gradient accents for the app chrome (headers, hero
         // text, buttons, backgrounds). Never used to signal status - good/
         // caution/severe stay the only colors that carry meaning.
-        "brand-a": "#e2611f",
+        "brand-a": "#1d6fd6",
         "brand-b": "#d3348e",
         "brand-c": "#7c3aed",
       },

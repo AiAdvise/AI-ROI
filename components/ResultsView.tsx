@@ -1,10 +1,25 @@
 import type { AnalysisResult } from "@/lib/types";
 import Reveal from "@/components/Reveal";
 
-const SEVERITY_META: Record<string, { label: string; border: string; badge: string }> = {
-  high: { label: "High", border: "border-l-severe", badge: "bg-severe-soft text-severe" },
-  medium: { label: "Medium", border: "border-l-caution", badge: "bg-caution-soft text-caution" },
-  low: { label: "Low", border: "border-l-line", badge: "bg-paper text-ink-soft" },
+// Each severity gets a full-card tint + border, not just a small badge, so
+// the cards read as distinctly colored at a glance rather than a uniform
+// stack of white boxes.
+const SEVERITY_META: Record<string, { label: string; card: string; badge: string }> = {
+  high: {
+    label: "High",
+    card: "border-severe/30 bg-severe-soft print:bg-white print:border-line",
+    badge: "bg-severe text-white",
+  },
+  medium: {
+    label: "Medium",
+    card: "border-caution/30 bg-caution-soft print:bg-white print:border-line",
+    badge: "bg-caution text-white",
+  },
+  low: {
+    label: "Low",
+    card: "border-line bg-paper-raised",
+    badge: "bg-ink-soft/10 text-ink-soft",
+  },
 };
 
 // "above"/"below" don't map to good/bad on their own - above a CPL benchmark is
@@ -12,14 +27,31 @@ const SEVERITY_META: Record<string, { label: string; border: string; badge: stri
 // rather than guessing a direction. "within" is the only assessment we treat as
 // a clean signal, and "insufficient_data" is coded like a finding, since it
 // usually means the agency's own report is withholding what's needed.
-const ASSESSMENT_META: Record<string, { label: string; badge: string }> = {
-  above: { label: "Above benchmark - worth a look", badge: "bg-caution-soft text-caution" },
-  within: { label: "Within normal range", badge: "bg-good-soft text-good" },
-  below: { label: "Below benchmark - worth a look", badge: "bg-caution-soft text-caution" },
-  no_benchmark_available: { label: "No benchmark available", badge: "bg-paper text-ink-soft" },
+const ASSESSMENT_META: Record<string, { label: string; card: string; badge: string }> = {
+  above: {
+    label: "Above benchmark - worth a look",
+    card: "border-caution/30 bg-caution-soft print:bg-white print:border-line",
+    badge: "bg-caution text-white",
+  },
+  within: {
+    label: "Within normal range",
+    card: "border-good/30 bg-good-soft print:bg-white print:border-line",
+    badge: "bg-good text-white",
+  },
+  below: {
+    label: "Below benchmark - worth a look",
+    card: "border-caution/30 bg-caution-soft print:bg-white print:border-line",
+    badge: "bg-caution text-white",
+  },
+  no_benchmark_available: {
+    label: "No benchmark available",
+    card: "border-line bg-paper-raised",
+    badge: "bg-ink-soft/10 text-ink-soft",
+  },
   insufficient_data: {
     label: "Can't calculate - report is missing data",
-    badge: "bg-severe-soft text-severe",
+    card: "border-severe/30 bg-severe-soft print:bg-white print:border-line",
+    badge: "bg-severe text-white",
   },
 };
 
@@ -162,9 +194,7 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
               const meta = SEVERITY_META[flag.severity];
               return (
                 <Reveal key={i} delay={Math.min(i, 6) * 70}>
-                  <div
-                    className={`card-lift rounded-lg border border-line border-l-4 bg-paper-raised p-4 shadow-sm ${meta.border}`}
-                  >
+                  <div className={`card-lift rounded-lg border p-4 shadow-sm ${meta.card}`}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-baseline gap-2">
                         <span className="font-serif text-sm text-ink-soft/70">
@@ -173,7 +203,7 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
                         <h3 className="font-medium text-ink">{flag.title}</h3>
                       </div>
                       <span
-                        className={`text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0 ${meta.badge}`}
+                        className={`text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0 print:bg-transparent print:text-ink-soft ${meta.badge}`}
                       >
                         {meta.label}
                       </span>
@@ -204,11 +234,11 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
               const meta = ASSESSMENT_META[b.assessment] ?? ASSESSMENT_META.no_benchmark_available;
               return (
                 <Reveal key={i} delay={Math.min(i, 6) * 70}>
-                  <div className="card-lift rounded-lg border border-line bg-paper-raised p-4 shadow-sm">
+                  <div className={`card-lift rounded-lg border p-4 shadow-sm ${meta.card}`}>
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="font-medium text-ink">{b.metric}</h3>
                       <span
-                        className={`text-xs font-medium px-2 py-1 rounded-full shrink-0 ${meta.badge}`}
+                        className={`text-xs font-medium px-2 py-1 rounded-full shrink-0 print:bg-transparent print:text-ink-soft ${meta.badge}`}
                       >
                         {meta.label}
                       </span>
@@ -240,7 +270,7 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 print:grid-cols-1">
             {result.recommendations.map((r, i) => (
               <Reveal key={i} delay={Math.min(i, 6) * 70}>
-                <div className="card-lift rounded-lg border border-line border-l-4 border-l-good bg-paper-raised p-4 shadow-sm">
+                <div className="card-lift rounded-lg border border-good/30 bg-good-soft p-4 shadow-sm print:bg-white print:border-line">
                   <h3 className="font-medium text-ink">{r.title}</h3>
                   <p className="text-sm text-ink mt-2 leading-relaxed font-medium">
                     {r.recommendation}
