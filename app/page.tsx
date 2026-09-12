@@ -165,7 +165,7 @@ export default function Home() {
 
         {status === "done" && result && (
           <div className="mt-2">
-            <div className="no-print max-w-3xl mx-auto mb-6 flex items-center justify-between gap-4">
+            <div className="no-print max-w-4xl mx-auto mb-6 flex items-center justify-between gap-4">
               <button
                 onClick={reset}
                 className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"

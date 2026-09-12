@@ -200,6 +200,7 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
         <Reveal delay={0}>
           <StatTile
+            accent="a"
             label="Latest total spend"
             value={
               later.result.documentSummary.totalSpendNumeric != null
@@ -215,12 +216,14 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
         </Reveal>
         <Reveal delay={80}>
           <StatTile
+            accent="c"
             label="Latest overall assessment"
             value={OVERALL_LABEL[later.result.overallAssessment]}
           />
         </Reveal>
         <Reveal delay={160}>
           <StatTile
+            accent="b"
             label="Red flags"
             value={String(later.result.redFlags.length)}
             delta={

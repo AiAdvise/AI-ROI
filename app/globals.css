@@ -33,7 +33,7 @@ body {
    copy. Falls back to solid ink on print, where a background-clip gradient
    would just render as invisible/black text in most print engines. */
 .gradient-text {
-  background-image: linear-gradient(100deg, #e2611f, #d3348e 55%, #7c3aed);
+  background-image: linear-gradient(100deg, #1d6fd6, #d3348e 55%, #7c3aed);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
