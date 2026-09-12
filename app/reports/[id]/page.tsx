@@ -69,10 +69,10 @@ export default async function ReportDetailPage({
       </header>
 
       <main className="px-4 py-14 sm:py-20">
-        <div className="no-print max-w-3xl mx-auto mb-6 flex justify-end">
+        <div className="no-print max-w-4xl mx-auto mb-6 flex justify-end">
           <ReportActions result={parsed.data} />
         </div>
-        <div className="max-w-3xl mx-auto mb-6">
+        <div className="max-w-4xl mx-auto mb-6">
           <Reveal>
             <AskAboutReport reportId={report.id} />
           </Reveal>

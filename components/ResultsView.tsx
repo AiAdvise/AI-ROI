@@ -54,7 +54,7 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
   const { documentSummary } = result;
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto">
       <Reveal>
         <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-ink via-[#2a1f3d] to-[#4a1730] px-6 py-8 sm:px-10 sm:py-10 shadow-xl print:bg-white print:border print:border-line print:shadow-none">
           <div
@@ -157,7 +157,7 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
         {result.redFlags.length === 0 ? (
           <p className="text-sm text-ink-soft">No red flags identified.</p>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 print:grid-cols-1">
             {result.redFlags.map((flag, i) => {
               const meta = SEVERITY_META[flag.severity];
               return (
@@ -199,7 +199,7 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
         {result.benchmarkComparisons.length === 0 ? (
           <p className="text-sm text-ink-soft">No benchmark comparisons available.</p>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 print:grid-cols-1">
             {result.benchmarkComparisons.map((b, i) => {
               const meta = ASSESSMENT_META[b.assessment] ?? ASSESSMENT_META.no_benchmark_available;
               return (
@@ -237,7 +237,7 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
             change to suggest.
           </p>
         ) : (
-          <div className="space-y-3">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 print:grid-cols-1">
             {result.recommendations.map((r, i) => (
               <Reveal key={i} delay={Math.min(i, 6) * 70}>
                 <div className="card-lift rounded-lg border border-line border-l-4 border-l-good bg-paper-raised p-4 shadow-sm">
