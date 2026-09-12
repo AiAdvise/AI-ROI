@@ -1,5 +1,6 @@
 import type { AnalysisResult } from "@/lib/types";
 import { ASSESSMENT_RANK, compareChannels, compareKpis, percentChange } from "@/lib/compare";
+import { effectiveDate, monthLabel } from "@/lib/trends";
 
 const OVERALL_META: Record<string, { label: string; badge: string }> = {
   looks_reasonable: { label: "Looks reasonable", badge: "bg-good-soft text-good" },
@@ -13,12 +14,8 @@ const SEVERITY_META: Record<string, { label: string; badge: string }> = {
   low: { label: "Low", badge: "bg-paper text-ink-soft" },
 };
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+function entryLabel(entry: ReportEntry) {
+  return monthLabel(effectiveDate(entry.result.documentSummary.reportingPeriodStart, entry.created_at));
 }
 
 function formatCurrency(n: number | null): string {
@@ -82,7 +79,7 @@ export default function ComparisonView({
         <div className="mt-6 grid grid-cols-2 gap-4 border-t border-white/15 pt-5">
           <div>
             <p className="text-xs uppercase tracking-widest text-white/50">
-              {formatDate(earlier.created_at)}
+              {entryLabel(earlier)}
             </p>
             <span
               className={`mt-2 inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${earlierOverall.badge}`}
@@ -92,7 +89,7 @@ export default function ComparisonView({
           </div>
           <div>
             <p className="text-xs uppercase tracking-widest text-white/50">
-              {formatDate(later.created_at)}
+              {entryLabel(later)}
             </p>
             <span
               className={`mt-2 inline-block text-xs font-semibold px-2.5 py-1 rounded-full ${laterOverall.badge}`}
@@ -116,8 +113,8 @@ export default function ComparisonView({
             <thead>
               <tr className="text-left text-ink-soft border-b border-line">
                 <th className="py-3 px-4 font-medium">Channel</th>
-                <th className="py-3 px-4 font-medium">{formatDate(earlier.created_at)}</th>
-                <th className="py-3 px-4 font-medium">{formatDate(later.created_at)}</th>
+                <th className="py-3 px-4 font-medium">{entryLabel(earlier)}</th>
+                <th className="py-3 px-4 font-medium">{entryLabel(later)}</th>
                 <th className="py-3 px-4 font-medium">Change</th>
               </tr>
             </thead>
@@ -156,8 +153,8 @@ export default function ComparisonView({
             <thead>
               <tr className="text-left text-ink-soft border-b border-line">
                 <th className="py-3 px-4 font-medium">KPI</th>
-                <th className="py-3 px-4 font-medium">{formatDate(earlier.created_at)}</th>
-                <th className="py-3 px-4 font-medium">{formatDate(later.created_at)}</th>
+                <th className="py-3 px-4 font-medium">{entryLabel(earlier)}</th>
+                <th className="py-3 px-4 font-medium">{entryLabel(later)}</th>
                 <th className="py-3 px-4 font-medium">Change</th>
               </tr>
             </thead>
@@ -198,13 +195,13 @@ export default function ComparisonView({
       <div className="mt-12 grid gap-6 sm:grid-cols-2">
         <div>
           <h2 className="font-serif text-xl font-semibold text-ink mb-3">
-            Findings · {formatDate(earlier.created_at)}
+            Findings · {entryLabel(earlier)}
           </h2>
           <FindingsColumn result={earlierResult} />
         </div>
         <div>
           <h2 className="font-serif text-xl font-semibold text-ink mb-3">
-            Findings · {formatDate(later.created_at)}
+            Findings · {entryLabel(later)}
           </h2>
           <FindingsColumn result={laterResult} />
         </div>
@@ -213,13 +210,13 @@ export default function ComparisonView({
       <div className="mt-12 grid gap-6 sm:grid-cols-2">
         <div>
           <h2 className="font-serif text-xl font-semibold text-ink mb-3">
-            Recommendations · {formatDate(earlier.created_at)}
+            Recommendations · {entryLabel(earlier)}
           </h2>
           <RecommendationsColumn result={earlierResult} />
         </div>
         <div>
           <h2 className="font-serif text-xl font-semibold text-ink mb-3">
-            Recommendations · {formatDate(later.created_at)}
+            Recommendations · {entryLabel(later)}
           </h2>
           <RecommendationsColumn result={laterResult} />
         </div>
