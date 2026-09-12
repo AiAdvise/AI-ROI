@@ -1,20 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-
-const OVERALL_LABEL: Record<string, string> = {
-  looks_reasonable: "Looks reasonable",
-  some_concerns: "Some concerns",
-  significant_concerns: "Significant concerns",
-};
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
+import HistoryList from "@/components/HistoryList";
 
 export default async function HistoryPage() {
   const supabase = await createClient();
@@ -68,33 +55,7 @@ export default async function HistoryPage() {
           </p>
         )}
 
-        {reports && reports.length > 0 && (
-          <ul className="divide-y divide-line rounded-lg border border-line bg-paper-raised">
-            {reports.map((r) => (
-              <li key={r.id}>
-                <Link
-                  href={`/reports/${r.id}`}
-                  className="flex items-center justify-between gap-4 px-4 py-4 hover:bg-paper"
-                >
-                  <div>
-                    <p className="text-sm font-medium text-ink">
-                      {r.business_type ?? r.trade ?? "Media plan diagnostic"}
-                    </p>
-                    <p className="mt-0.5 text-xs text-ink-soft">
-                      {formatDate(r.created_at)}
-                      {r.reporting_period ? ` · ${r.reporting_period}` : ""}
-                    </p>
-                  </div>
-                  <span className="shrink-0 text-xs font-medium text-ink-soft">
-                    {r.overall_assessment
-                      ? OVERALL_LABEL[r.overall_assessment] ?? r.overall_assessment
-                      : ""}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+        {reports && reports.length > 0 && <HistoryList reports={reports} />}
       </main>
     </div>
   );

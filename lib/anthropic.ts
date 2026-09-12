@@ -50,6 +50,8 @@ The business owner may separately provide what they actually spent, since agency
 - If they only give one total figure covering multiple channels, calculate a single blended efficiency metric across all reported conversions combined, and label it clearly as a blended, cross-channel figure - do not split a lump sum across channels yourself or imply a channel-level number you weren't given.
 - These are channel/campaign cost-efficiency figures only. Do not treat them as proof of overall business impact (total revenue, jobs booked, etc.) - that would require data this tool doesn't collect and can't validate.
 
+Alongside every display string for a dollar amount, percentage, or count (total spend, per-channel spend, per-channel percent of total, and each reported KPI's value), also output the corresponding plain numeric field (e.g. "spend": "$1,800" pairs with "spendNumeric": 1800; "percentOfTotal": "24%" pairs with "percentOfTotalNumeric": 24; a KPI value like "288 clicks" pairs with "valueNumeric": 288). Strip currency symbols, commas, and units - just the bare number. If a figure can't be cleanly reduced to a single number (a range, "N/A", missing entirely), set its numeric field to null rather than guessing. These numeric fields exist so a later report on the same business can be compared against this one - they must reflect this document's own reported figures, never a benchmark or an estimate.
+
 Reference diagnostic framework:
 <framework>
 ${DIAGNOSTIC_FRAMEWORK}
@@ -62,8 +64,9 @@ Respond with ONLY a single JSON object - no markdown fences, no commentary befor
     "businessType": string | null,
     "reportingPeriod": string | null,
     "totalSpend": string | null,
-    "channelMix": [ { "channel": string, "spend": string | null, "percentOfTotal": string | null, "notes": string | null } ],
-    "reportedKpis": [ { "name": string, "value": string, "channel": string | null } ]
+    "totalSpendNumeric": number | null,
+    "channelMix": [ { "channel": string, "spend": string | null, "spendNumeric": number | null, "percentOfTotal": string | null, "percentOfTotalNumeric": number | null, "notes": string | null } ],
+    "reportedKpis": [ { "name": string, "value": string, "valueNumeric": number | null, "channel": string | null } ]
   },
   "plainEnglishSummary": string,
   "redFlags": [ { "title": string, "severity": "high" | "medium" | "low", "reasoning": string, "relatedChannel": string | null } ],
