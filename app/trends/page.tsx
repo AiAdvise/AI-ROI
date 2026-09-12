@@ -16,6 +16,9 @@ import StatTile from "@/components/StatTile";
 import SpendTrendChart from "@/components/charts/SpendTrendChart";
 import AssessmentTimeline from "@/components/charts/AssessmentTimeline";
 import ChannelTrendChart from "@/components/charts/ChannelTrendChart";
+import BrandMark from "@/components/BrandMark";
+import GradientBlobs from "@/components/GradientBlobs";
+import Reveal from "@/components/Reveal";
 
 const OVERALL_LABEL: Record<string, string> = {
   looks_reasonable: "Looks reasonable",
@@ -65,8 +68,8 @@ export default async function TrendsPage() {
     <div className="min-h-screen">
       <header className="border-b border-line bg-paper-raised">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="font-serif text-lg font-semibold tracking-tight text-ink">
-            Media Plan Diagnostic
+          <Link href="/">
+            <BrandMark className="text-lg" />
           </Link>
           <div className="flex items-center gap-4">
             <Link
@@ -85,8 +88,11 @@ export default async function TrendsPage() {
         </div>
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-12">
-        <h1 className="font-serif text-2xl font-semibold tracking-tight text-ink mb-2">Trends</h1>
+      <main className="relative max-w-5xl mx-auto px-4 py-12">
+        <GradientBlobs />
+        <h1 className="gradient-text font-serif text-3xl font-semibold tracking-tight mb-2">
+          Trends
+        </h1>
 
         {reports.length < 2 ? (
           <p className="text-sm text-ink-soft">
@@ -153,9 +159,13 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
 
   return (
     <>
-      <div className={`mb-6 rounded-xl border p-5 font-serif text-lg font-semibold leading-snug ${headlineClasses}`}>
-        {headline.text}
-      </div>
+      <Reveal>
+        <div
+          className={`mb-6 rounded-xl border p-5 font-serif text-lg font-semibold leading-snug shadow-sm ${headlineClasses}`}
+        >
+          {headline.text}
+        </div>
+      </Reveal>
 
       <p className="text-sm text-ink-soft mb-8">
         Showing your last {windowReports.length} report{windowReports.length === 1 ? "" : "s"}:{" "}
@@ -188,76 +198,84 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
       )}
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-        <StatTile
-          label="Latest total spend"
-          value={
-            later.result.documentSummary.totalSpendNumeric != null
-              ? `$${later.result.documentSummary.totalSpendNumeric.toLocaleString()}`
-              : "—"
-          }
-          delta={
-            spendDeltaPct != null
-              ? `${spendDeltaPct >= 0 ? "+" : ""}${Math.round(spendDeltaPct)}% ${sinceLabel}`
-              : null
-          }
-        />
-        <StatTile
-          label="Latest overall assessment"
-          value={OVERALL_LABEL[later.result.overallAssessment]}
-        />
-        <StatTile
-          label="Red flags"
-          value={String(later.result.redFlags.length)}
-          delta={
-            redFlagDelta === 0
-              ? `No change ${sinceLabel}`
-              : `${redFlagDelta > 0 ? "+" : ""}${redFlagDelta} ${sinceLabel}`
-          }
-          deltaTone={redFlagDelta > 0 ? "severe" : redFlagDelta < 0 ? "good" : "neutral"}
-        />
+        <Reveal delay={0}>
+          <StatTile
+            label="Latest total spend"
+            value={
+              later.result.documentSummary.totalSpendNumeric != null
+                ? `$${later.result.documentSummary.totalSpendNumeric.toLocaleString()}`
+                : "—"
+            }
+            delta={
+              spendDeltaPct != null
+                ? `${spendDeltaPct >= 0 ? "+" : ""}${Math.round(spendDeltaPct)}% ${sinceLabel}`
+                : null
+            }
+          />
+        </Reveal>
+        <Reveal delay={80}>
+          <StatTile
+            label="Latest overall assessment"
+            value={OVERALL_LABEL[later.result.overallAssessment]}
+          />
+        </Reveal>
+        <Reveal delay={160}>
+          <StatTile
+            label="Red flags"
+            value={String(later.result.redFlags.length)}
+            delta={
+              redFlagDelta === 0
+                ? `No change ${sinceLabel}`
+                : `${redFlagDelta > 0 ? "+" : ""}${redFlagDelta} ${sinceLabel}`
+            }
+            deltaTone={redFlagDelta > 0 ? "severe" : redFlagDelta < 0 ? "good" : "neutral"}
+          />
+        </Reveal>
       </div>
 
       {insights.length > 0 && (
-        <div className="mb-10 rounded-xl border border-accent/20 bg-accent-soft p-5">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-accent mb-3">
-            What changed
-          </h2>
-          <ul className="space-y-1.5">
-            {insights.map((insight, i) => (
-              <li key={i} className="text-sm text-ink flex gap-2">
-                <span className="text-accent">&bull;</span>
-                {insight}
-              </li>
-            ))}
-          </ul>
-        </div>
+        <Reveal className="mb-10">
+          <div className="rounded-xl border border-accent/20 bg-accent-soft p-5">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-accent mb-3">
+              What changed
+            </h2>
+            <ul className="space-y-1.5">
+              {insights.map((insight, i) => (
+                <li key={i} className="text-sm text-ink flex gap-2">
+                  <span className="text-accent">&bull;</span>
+                  {insight}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </Reveal>
       )}
 
       {spendPoints.length >= 2 && (
-        <div className="mb-10">
+        <Reveal className="mb-10">
           <h2 className="font-serif text-lg font-semibold text-ink mb-3">Total spend over time</h2>
-          <div className="rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
+          <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
             <SpendTrendChart points={spendPoints} />
           </div>
-        </div>
+        </Reveal>
       )}
 
-      <div className="mb-10">
+      <Reveal className="mb-10">
         <h2 className="font-serif text-lg font-semibold text-ink mb-3">
           Overall assessment over time
         </h2>
-        <div className="rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
+        <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
           <AssessmentTimeline points={assessmentPoints} />
         </div>
-      </div>
+      </Reveal>
 
       {channelSeries.length > 0 && (
-        <div className="mb-10">
+        <Reveal className="mb-10">
           <h2 className="font-serif text-lg font-semibold text-ink mb-3">Channel spend over time</h2>
-          <div className="rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
+          <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
             <ChannelTrendChart series={channelSeries} />
           </div>
-        </div>
+        </Reveal>
       )}
     </>
   );

@@ -139,7 +139,7 @@ export default function UploadForm({ onSubmit, disabled }: UploadFormProps) {
       <button
         type="submit"
         disabled={disabled || !file}
-        className="mt-6 w-full rounded-lg bg-ink px-4 py-3 font-medium text-white transition-colors hover:bg-ink/90 disabled:opacity-40 disabled:hover:bg-ink"
+        className="mt-6 w-full rounded-lg bg-gradient-to-r from-brand-a via-brand-b to-brand-c bg-[length:160%_100%] bg-[position:0%_0%] px-4 py-3 font-medium text-white shadow-md transition-[background-position,transform,box-shadow] duration-300 hover:bg-[position:100%_0%] hover:shadow-lg active:scale-[0.99] disabled:opacity-40 disabled:hover:bg-[position:0%_0%] disabled:hover:shadow-md"
       >
         {disabled ? "Analyzing..." : "Diagnose my report"}
       </button>

@@ -3,9 +3,9 @@
 import { useState } from "react";
 
 const QUESTIONS: { key: string; label: string }[] = [
-  { key: "why", label: "Why is this happening?" },
-  { key: "normal", label: "Is this normal?" },
-  { key: "ask_agency", label: "What should I ask my agency?" },
+  { key: "next_step", label: "What should I do first?" },
+  { key: "overcharged", label: "Am I overpaying for this?" },
+  { key: "proof_it_works", label: "Does this prove it's working?" },
 ];
 
 export default function AskAboutReport({ reportId }: { reportId: string }) {
@@ -34,7 +34,7 @@ export default function AskAboutReport({ reportId }: { reportId: string }) {
   }
 
   return (
-    <div className="no-print rounded-xl border border-line bg-paper-raised p-5">
+    <div className="no-print card-lift rounded-xl border border-line bg-paper-raised p-5 shadow-sm">
       <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-3">
         Ask about this report
       </h2>
@@ -44,7 +44,7 @@ export default function AskAboutReport({ reportId }: { reportId: string }) {
             key={q.key}
             onClick={() => ask(q.key, q.label)}
             disabled={loadingKey !== null}
-            className="rounded-full border border-line px-3 py-1.5 text-sm text-ink-soft transition-colors hover:border-accent hover:text-ink disabled:opacity-50"
+            className="rounded-full border border-line px-3 py-1.5 text-sm text-ink-soft transition-all hover:border-transparent hover:bg-gradient-to-r hover:from-brand-a hover:via-brand-b hover:to-brand-c hover:text-white hover:shadow-md disabled:opacity-50"
           >
             {loadingKey === q.key ? "Thinking…" : q.label}
           </button>
