@@ -6,6 +6,7 @@ import { compareChannels, percentChange } from "@/lib/compare";
 import {
   channelSpendSeries,
   computeInsights,
+  headlineVerdict,
   monthLabel,
   reportEffectiveDate,
   sortReportsByEffectiveDate,
@@ -142,9 +143,20 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
 
   const redFlagDelta = later.result.redFlags.length - earlier.result.redFlags.length;
   const sinceLabel = `since ${monthLabel(reportEffectiveDate(earlier))}`;
+  const headline = headlineVerdict(earlier, later);
+  const headlineClasses =
+    headline.tone === "good"
+      ? "border-good/20 bg-good-soft text-good"
+      : headline.tone === "severe"
+        ? "border-severe/20 bg-severe-soft text-severe"
+        : "border-line bg-paper-raised text-ink";
 
   return (
     <>
+      <div className={`mb-6 rounded-xl border p-5 font-serif text-lg font-semibold leading-snug ${headlineClasses}`}>
+        {headline.text}
+      </div>
+
       <p className="text-sm text-ink-soft mb-8">
         Showing your last {windowReports.length} report{windowReports.length === 1 ? "" : "s"}:{" "}
         {monthLabel(reportEffectiveDate(earlier))} to {monthLabel(reportEffectiveDate(later))}

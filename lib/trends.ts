@@ -116,6 +116,78 @@ export function channelSpendSeries(reports: ReportPoint[]): ChannelSeries[] {
   return series;
 }
 
+export interface Headline {
+  text: string;
+  tone: "good" | "severe" | "neutral";
+}
+
+/**
+ * One sentence that fuses the two strongest signals - assessment trend and
+ * spend change - into a single causal takeaway, instead of leaving the
+ * reader to piece several separate stat deltas together themselves.
+ * Deterministic, built only from the same numbers computeInsights reads out
+ * - never a separate model call.
+ */
+export function headlineVerdict(earlier: ReportPoint, later: ReportPoint): Headline {
+  const rankDelta =
+    ASSESSMENT_RANK[later.result.overallAssessment] - ASSESSMENT_RANK[earlier.result.overallAssessment];
+  const spendPct = percentChange(
+    earlier.result.documentSummary.totalSpendNumeric,
+    later.result.documentSummary.totalSpendNumeric,
+  );
+  const redFlagDelta = later.result.redFlags.length - earlier.result.redFlags.length;
+  const spendUp = spendPct != null && spendPct >= 5;
+  const spendDown = spendPct != null && spendPct <= -5;
+  const spendLabel = spendPct != null ? pctLabel(spendPct) : null;
+
+  if (rankDelta > 0) {
+    return {
+      tone: "severe",
+      text: spendUp
+        ? `Spend is up ${spendLabel} but results got worse - worth a call to your agency this week.`
+        : `Results got worse even though spend didn't change much - worth a call to your agency this week.`,
+    };
+  }
+
+  if (rankDelta < 0) {
+    return {
+      tone: "good",
+      text: spendUp
+        ? `Spend is up ${spendLabel}, and results improved too - a healthy sign.`
+        : spendDown
+          ? `Results improved even though spend went down - a good sign.`
+          : `Results improved without a big change in spend - a good sign.`,
+    };
+  }
+
+  // Assessment held steady - fall back to the next-strongest signal.
+  if (redFlagDelta > 0) {
+    return {
+      tone: "severe",
+      text: `Red flags increased even though the overall picture held steady - worth a look.`,
+    };
+  }
+  if (redFlagDelta < 0) {
+    return {
+      tone: "good",
+      text: `Red flags decreased and the overall picture held steady - a good sign.`,
+    };
+  }
+  if (spendUp) {
+    return {
+      tone: "neutral",
+      text: `Spend is up ${spendLabel} with no real change in results - ask your agency where that extra budget went.`,
+    };
+  }
+  if (spendDown) {
+    return {
+      tone: "neutral",
+      text: `Spend is down ${spendLabel} with no real change in results.`,
+    };
+  }
+  return { tone: "neutral", text: `Nothing major changed between these reports.` };
+}
+
 /**
  * Short, grounded callouts built only from real deltas already computed
  * elsewhere (assessment rank, spend %, red-flag counts, channel movers) -

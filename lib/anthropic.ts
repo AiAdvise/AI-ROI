@@ -167,6 +167,41 @@ export async function analyzeMediaPlan(input: AnalyzeInput): Promise<AnalysisRes
   return result.data;
 }
 
+const ASK_SYSTEM_PROMPT = `
+You are the same media-buying diagnostic expert, now answering one focused follow-up question about a diagnostic you already produced for this home-services business owner. You are given the full diagnostic result as JSON below - answer using only what's in it, plus the same general advertising-measurement knowledge you used to produce it. Never introduce a number, benchmark, or claim that isn't already in this diagnostic.
+
+Answer in 2-4 short sentences, plain English, no jargon unless you define it inline. Answer the specific question asked - do not summarize or repeat the whole report back. Respond with ONLY the answer text - no markdown headers, no restating the question, no closing offers to help further.
+`.trim();
+
+/**
+ * A scoped follow-up question about an already-completed diagnostic. The
+ * question text itself is never taken from user free-text input - callers
+ * pass one of a small server-side set of canned questions (see the API
+ * route), so there's no open-ended prompt-injection surface here.
+ */
+export async function answerFollowUpQuestion(result: AnalysisResult, question: string): Promise<string> {
+  const anthropic = getClient();
+
+  const stream = anthropic.messages.stream({
+    model: MODEL,
+    max_tokens: 500,
+    system: `${ASK_SYSTEM_PROMPT}\n\nDiagnostic result:\n<result>\n${JSON.stringify(result)}\n</result>`,
+    output_config: { effort: "low" },
+    messages: [{ role: "user", content: question }],
+  });
+
+  const response = await stream.finalMessage();
+  const textBlock = response.content.find(
+    (block): block is Anthropic.Messages.TextBlock => block.type === "text",
+  );
+
+  if (!textBlock) {
+    throw new Error("Model returned no text content");
+  }
+
+  return textBlock.text.trim();
+}
+
 function extractJson(text: string): unknown {
   const trimmed = text.trim();
   try {
