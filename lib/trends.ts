@@ -7,6 +7,32 @@ export interface ReportPoint {
   result: AnalysisResult;
 }
 
+/**
+ * The date a report should be sorted and labeled by: the reporting period
+ * the document itself states (extracted by the model), not the day it
+ * happened to be uploaded. Falls back to the upload date only when the
+ * document didn't state a period - two reports both run today, for two
+ * different months, should never both read as "today".
+ */
+export function effectiveDate(periodStart: string | null, createdAt: string): string {
+  return periodStart ?? createdAt;
+}
+
+export function reportEffectiveDate(report: ReportPoint): string {
+  return effectiveDate(report.result.documentSummary.reportingPeriodStart, report.created_at);
+}
+
+export function sortReportsByEffectiveDate<T extends ReportPoint>(reports: T[]): T[] {
+  return [...reports].sort(
+    (a, b) => new Date(reportEffectiveDate(a)).getTime() - new Date(reportEffectiveDate(b)).getTime(),
+  );
+}
+
+/** "Aug 2026" - reports are grouped and labeled by month, not by day. */
+export function monthLabel(dateStr: string): string {
+  return new Date(dateStr).toLocaleDateString("en-US", { month: "short", year: "numeric" });
+}
+
 const OVERALL_LABEL: Record<string, string> = {
   looks_reasonable: "looks reasonable",
   some_concerns: "some concerns",
@@ -31,10 +57,6 @@ export interface ChannelSeries {
   points: { label: string; value: number | null }[];
 }
 
-function shortDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
 /**
  * Pivots each report's channel spend into one series per channel across the
  * whole window, so a channel's trend reads as a single line rather than a
@@ -44,7 +66,7 @@ function shortDate(iso: string) {
  * folded into "Other" rather than generating more hues.
  */
 export function channelSpendSeries(reports: ReportPoint[]): ChannelSeries[] {
-  const labels = reports.map((r) => shortDate(r.created_at));
+  const labels = reports.map((r) => monthLabel(reportEffectiveDate(r)));
   const totalsByChannel = new Map<string, { display: string; total: number; values: (number | null)[] }>();
 
   reports.forEach((r, i) => {

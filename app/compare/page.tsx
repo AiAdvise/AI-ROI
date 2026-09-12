@@ -3,6 +3,7 @@ import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import ComparisonView from "@/components/ComparisonView";
 import { AnalysisResultSchema } from "@/lib/types";
+import { effectiveDate } from "@/lib/trends";
 
 export default async function ComparePage({
   searchParams,
@@ -41,9 +42,11 @@ export default async function ComparePage({
     notFound();
   }
 
-  const [first, second] = parsedRows as { created_at: string; result: ReturnType<typeof AnalysisResultSchema.parse> }[];
+  type ParsedReport = { created_at: string; result: ReturnType<typeof AnalysisResultSchema.parse> };
+  const [first, second] = parsedRows as ParsedReport[];
+  const dateOf = (r: ParsedReport) => effectiveDate(r.result.documentSummary.reportingPeriodStart, r.created_at);
   const [earlier, later] =
-    new Date(first.created_at).getTime() <= new Date(second.created_at).getTime()
+    new Date(dateOf(first)).getTime() <= new Date(dateOf(second)).getTime()
       ? [first, second]
       : [second, first];
 

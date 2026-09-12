@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { effectiveDate, monthLabel } from "@/lib/trends";
 
 const OVERALL_LABEL: Record<string, string> = {
   looks_reasonable: "Looks reasonable",
@@ -9,19 +10,12 @@ const OVERALL_LABEL: Record<string, string> = {
   significant_concerns: "Significant concerns",
 };
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
 export interface HistoryReportRow {
   id: string;
   business_type: string | null;
   trade: string | null;
   reporting_period: string | null;
+  reporting_period_start: string | null;
   overall_assessment: string | null;
   created_at: string;
 }
@@ -56,7 +50,7 @@ export default function HistoryList({ reports }: { reports: HistoryReportRow[] }
               checked={selected.includes(r.id)}
               onChange={() => toggle(r.id)}
               className="h-4 w-4 shrink-0 accent-ink"
-              aria-label={`Select ${r.business_type ?? r.trade ?? "report"} from ${formatDate(r.created_at)} to compare`}
+              aria-label={`Select ${r.business_type ?? r.trade ?? "report"} from ${monthLabel(effectiveDate(r.reporting_period_start, r.created_at))} to compare`}
             />
             <Link
               href={`/reports/${r.id}`}
@@ -67,7 +61,7 @@ export default function HistoryList({ reports }: { reports: HistoryReportRow[] }
                   {r.business_type ?? r.trade ?? "Media plan diagnostic"}
                 </p>
                 <p className="mt-0.5 text-xs text-ink-soft">
-                  {formatDate(r.created_at)}
+                  {monthLabel(effectiveDate(r.reporting_period_start, r.created_at))}
                   {r.reporting_period ? ` · ${r.reporting_period}` : ""}
                 </p>
               </div>

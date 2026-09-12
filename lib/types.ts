@@ -23,6 +23,16 @@ const nullableNumber = z.preprocess((v) => {
   return null;
 }, z.number().nullable());
 
+// The model is asked to normalize whatever reporting period the document
+// states (e.g. "August 2026 Performance Report", "8/1/26 - 8/31/26") into
+// the ISO date of that period's first day, so reports can be sorted and
+// labeled by the month they actually cover instead of the day they happened
+// to be uploaded. Only accept it if it actually parses as a date.
+const nullableDateString = z.preprocess((v) => {
+  if (typeof v !== "string" || v.trim() === "") return null;
+  return Number.isNaN(new Date(v).getTime()) ? null : v;
+}, z.string().nullable());
+
 export const ChannelSpendSchema = z.object({
   channel: z.string(),
   spend: nullableString,
@@ -71,6 +81,7 @@ export const AnalysisResultSchema = z.object({
   documentSummary: z.object({
     businessType: nullableString,
     reportingPeriod: nullableString,
+    reportingPeriodStart: nullableDateString,
     totalSpend: nullableString,
     totalSpendNumeric: nullableNumber,
     channelMix: z.array(ChannelSpendSchema).default([]),

@@ -52,6 +52,8 @@ The business owner may separately provide what they actually spent, since agency
 
 Alongside every display string for a dollar amount, percentage, or count (total spend, per-channel spend, per-channel percent of total, and each reported KPI's value), also output the corresponding plain numeric field (e.g. "spend": "$1,800" pairs with "spendNumeric": 1800; "percentOfTotal": "24%" pairs with "percentOfTotalNumeric": 24; a KPI value like "288 clicks" pairs with "valueNumeric": 288). Strip currency symbols, commas, and units - just the bare number. If a figure can't be cleanly reduced to a single number (a range, "N/A", missing entirely), set its numeric field to null rather than guessing. These numeric fields exist so a later report on the same business can be compared against this one - they must reflect this document's own reported figures, never a benchmark or an estimate.
 
+Alongside "reportingPeriod" (the human-readable period text, e.g. "August 2026" or "8/1/26 - 8/31/26"), also output "reportingPeriodStart": the first day of that same period as an ISO date "YYYY-MM-DD" (e.g. "August 2026" -> "2026-08-01"; a date range -> its start date). This lets reports be sorted and compared by the month they actually cover, not the day they were uploaded to this tool - so derive it only from a period the document itself states, and set it to null if the document doesn't state one. Never infer it from anything else (today's date, the file name, etc.).
+
 Reference diagnostic framework:
 <framework>
 ${DIAGNOSTIC_FRAMEWORK}
@@ -63,6 +65,7 @@ Respond with ONLY a single JSON object - no markdown fences, no commentary befor
   "documentSummary": {
     "businessType": string | null,
     "reportingPeriod": string | null,
+    "reportingPeriodStart": string | null,
     "totalSpend": string | null,
     "totalSpendNumeric": number | null,
     "channelMix": [ { "channel": string, "spend": string | null, "spendNumeric": number | null, "percentOfTotal": string | null, "percentOfTotalNumeric": number | null, "notes": string | null } ],

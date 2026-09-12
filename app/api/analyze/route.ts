@@ -75,6 +75,7 @@ export async function POST(req: NextRequest) {
         business_type: result.documentSummary.businessType,
         trade: typeof trade === "string" && trade.trim() ? trade.trim() : null,
         reporting_period: result.documentSummary.reportingPeriod,
+        reporting_period_start: result.documentSummary.reportingPeriodStart,
         overall_assessment: result.overallAssessment,
         result,
       })

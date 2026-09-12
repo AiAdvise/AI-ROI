@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import HistoryList from "@/components/HistoryList";
+import { effectiveDate } from "@/lib/trends";
 
 export default async function HistoryPage() {
   const supabase = await createClient();
@@ -13,10 +14,21 @@ export default async function HistoryPage() {
     redirect("/login");
   }
 
-  const { data: reports, error } = await supabase
+  const { data: rows, error } = await supabase
     .from("reports")
-    .select("id, business_type, trade, reporting_period, overall_assessment, created_at")
-    .order("created_at", { ascending: false });
+    .select(
+      "id, business_type, trade, reporting_period, reporting_period_start, overall_assessment, created_at",
+    );
+
+  // Sorted by the period each report covers, not upload order - so reports
+  // run out of order (e.g. backfilling an older month) still list correctly.
+  const reports = rows
+    ? [...rows].sort(
+        (a, b) =>
+          new Date(effectiveDate(b.reporting_period_start, b.created_at)).getTime() -
+          new Date(effectiveDate(a.reporting_period_start, a.created_at)).getTime(),
+      )
+    : null;
 
   return (
     <div className="min-h-screen">

@@ -3,7 +3,14 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AnalysisResultSchema } from "@/lib/types";
 import { compareChannels, percentChange } from "@/lib/compare";
-import { channelSpendSeries, computeInsights, type ReportPoint } from "@/lib/trends";
+import {
+  channelSpendSeries,
+  computeInsights,
+  monthLabel,
+  reportEffectiveDate,
+  sortReportsByEffectiveDate,
+  type ReportPoint,
+} from "@/lib/trends";
 import StatTile from "@/components/StatTile";
 import SpendTrendChart from "@/components/charts/SpendTrendChart";
 import AssessmentTimeline from "@/components/charts/AssessmentTimeline";
@@ -17,18 +24,6 @@ const OVERALL_LABEL: Record<string, string> = {
 
 const TREND_WINDOW = 6;
 
-function shortDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
-}
-
-function fullDate(iso: string) {
-  return new Date(iso).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
 export default async function TrendsPage() {
   const supabase = await createClient();
   const {
@@ -39,12 +34,9 @@ export default async function TrendsPage() {
     redirect("/login");
   }
 
-  const { data: rows } = await supabase
-    .from("reports")
-    .select("id, result, created_at")
-    .order("created_at", { ascending: true });
+  const { data: rows } = await supabase.from("reports").select("id, result, created_at");
 
-  const reports: ReportPoint[] = (rows ?? [])
+  const parsedReports: ReportPoint[] = (rows ?? [])
     .map((r) => {
       const parsed = AnalysisResultSchema.safeParse(r.result);
       return parsed.success
@@ -52,6 +44,11 @@ export default async function TrendsPage() {
         : null;
     })
     .filter((r): r is ReportPoint => r !== null);
+
+  // Sorted by the period each report actually covers, not upload order -
+  // otherwise two reports run back-to-back today for different months
+  // would show in upload order instead of the order they happened.
+  const reports = sortReportsByEffectiveDate(parsedReports);
 
   return (
     <div className="min-h-screen">
@@ -109,12 +106,12 @@ function TrendsBody({ reports }: { reports: ReportPoint[] }) {
   const spendPoints = windowReports
     .filter((r) => r.result.documentSummary.totalSpendNumeric != null)
     .map((r) => ({
-      label: shortDate(r.created_at),
+      label: monthLabel(reportEffectiveDate(r)),
       value: r.result.documentSummary.totalSpendNumeric as number,
     }));
 
   const assessmentPoints = windowReports.map((r) => ({
-    label: shortDate(r.created_at),
+    label: monthLabel(reportEffectiveDate(r)),
     assessment: r.result.overallAssessment,
   }));
 
@@ -124,13 +121,13 @@ function TrendsBody({ reports }: { reports: ReportPoint[] }) {
   );
 
   const redFlagDelta = later.result.redFlags.length - earlier.result.redFlags.length;
-  const sinceLabel = `since ${shortDate(earlier.created_at)}`;
+  const sinceLabel = `since ${monthLabel(reportEffectiveDate(earlier))}`;
 
   return (
     <>
       <p className="text-sm text-ink-soft mb-8">
         Showing your last {windowReports.length} report{windowReports.length === 1 ? "" : "s"}:{" "}
-        {fullDate(earlier.created_at)} to {fullDate(later.created_at)}
+        {monthLabel(reportEffectiveDate(earlier))} to {monthLabel(reportEffectiveDate(later))}
         {reports.length > windowReports.length &&
           ` (${reports.length - windowReports.length} earlier report${
             reports.length - windowReports.length === 1 ? "" : "s"
