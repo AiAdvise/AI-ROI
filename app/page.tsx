@@ -1,17 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import UploadForm from "@/components/UploadForm";
 import ResultsView from "@/components/ResultsView";
+import { createClient } from "@/lib/supabase/client";
 import type { AnalysisResult } from "@/lib/types";
 
 type Status = "idle" | "analyzing" | "error" | "done";
 
 export default function Home() {
+  const router = useRouter();
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
   const [downloadingPdf, setDownloadingPdf] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getUser().then(({ data }) => {
+      setUserEmail(data.user?.email ?? null);
+    });
+  }, []);
+
+  async function handleSignOut() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/login");
+    router.refresh();
+  }
 
   async function handleSubmit(file: File, trade: string | null, spendNotes: string | null) {
     setStatus("analyzing");
@@ -95,9 +114,31 @@ export default function Home() {
           <span className="font-serif text-lg font-semibold tracking-tight text-ink">
             Media Plan Diagnostic
           </span>
-          <span className="hidden sm:block text-xs font-medium uppercase tracking-widest text-ink-soft">
-            Ad Spend Audit
-          </span>
+          <div className="flex items-center gap-4">
+            {userEmail && (
+              <Link
+                href="/history"
+                className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
+              >
+                History
+              </Link>
+            )}
+            {userEmail ? (
+              <button
+                onClick={handleSignOut}
+                className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
+              >
+                Sign out
+              </button>
+            ) : (
+              <Link
+                href="/login"
+                className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
+              >
+                Sign in
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
