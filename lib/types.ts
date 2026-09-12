@@ -8,16 +8,34 @@ const nullableString = z
   .nullish()
   .transform((v) => v ?? null);
 
+// The model is asked to also emit a plain numeric value alongside display
+// strings like "$1,800" or "12%" so month-over-month deltas can be computed
+// without re-parsing prose. It sometimes sends the number as a string
+// anyway (or omits it) - coerce either into a clean number or null rather
+// than failing validation.
+const nullableNumber = z.preprocess((v) => {
+  if (v === null || v === undefined) return null;
+  if (typeof v === "number") return Number.isFinite(v) ? v : null;
+  if (typeof v === "string") {
+    const n = parseFloat(v.replace(/[^0-9.-]/g, ""));
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}, z.number().nullable());
+
 export const ChannelSpendSchema = z.object({
   channel: z.string(),
   spend: nullableString,
+  spendNumeric: nullableNumber,
   percentOfTotal: nullableString,
+  percentOfTotalNumeric: nullableNumber,
   notes: nullableString,
 });
 
 export const KpiSchema = z.object({
   name: z.string(),
   value: z.string(),
+  valueNumeric: nullableNumber,
   channel: nullableString,
 });
 
@@ -54,6 +72,7 @@ export const AnalysisResultSchema = z.object({
     businessType: nullableString,
     reportingPeriod: nullableString,
     totalSpend: nullableString,
+    totalSpendNumeric: nullableNumber,
     channelMix: z.array(ChannelSpendSchema).default([]),
     reportedKpis: z.array(KpiSchema).default([]),
   }),
