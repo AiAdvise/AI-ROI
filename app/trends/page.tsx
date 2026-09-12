@@ -3,17 +3,19 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AnalysisResultSchema } from "@/lib/types";
 import { compareChannels, percentChange } from "@/lib/compare";
-import { computeInsights, type ReportPoint } from "@/lib/trends";
+import { channelSpendSeries, computeInsights, type ReportPoint } from "@/lib/trends";
 import StatTile from "@/components/StatTile";
 import SpendTrendChart from "@/components/charts/SpendTrendChart";
 import AssessmentTimeline from "@/components/charts/AssessmentTimeline";
-import ChannelDumbbellChart from "@/components/charts/ChannelDumbbellChart";
+import ChannelTrendChart from "@/components/charts/ChannelTrendChart";
 
 const OVERALL_LABEL: Record<string, string> = {
   looks_reasonable: "Looks reasonable",
   some_concerns: "Some concerns",
   significant_concerns: "Significant concerns",
 };
+
+const TREND_WINDOW = 6;
 
 function shortDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -94,19 +96,24 @@ export default async function TrendsPage() {
 }
 
 function TrendsBody({ reports }: { reports: ReportPoint[] }) {
-  const later = reports[reports.length - 1];
-  const earlier = reports[reports.length - 2];
+  // Everything on this page reflects the same window - up to the last
+  // TREND_WINDOW saved reports - rather than mixing an all-time chart with
+  // a 2-report comparison elsewhere on the same page.
+  const windowReports = reports.slice(-TREND_WINDOW);
+  const earlier = windowReports[0];
+  const later = windowReports[windowReports.length - 1];
   const channelRows = compareChannels(earlier.result, later.result);
   const insights = computeInsights(earlier, later, channelRows);
+  const channelSeries = channelSpendSeries(windowReports);
 
-  const spendPoints = reports
+  const spendPoints = windowReports
     .filter((r) => r.result.documentSummary.totalSpendNumeric != null)
     .map((r) => ({
       label: shortDate(r.created_at),
       value: r.result.documentSummary.totalSpendNumeric as number,
     }));
 
-  const assessmentPoints = reports.map((r) => ({
+  const assessmentPoints = windowReports.map((r) => ({
     label: shortDate(r.created_at),
     assessment: r.result.overallAssessment,
   }));
@@ -117,12 +124,18 @@ function TrendsBody({ reports }: { reports: ReportPoint[] }) {
   );
 
   const redFlagDelta = later.result.redFlags.length - earlier.result.redFlags.length;
+  const sinceLabel = `since ${shortDate(earlier.created_at)}`;
 
   return (
     <>
       <p className="text-sm text-ink-soft mb-8">
-        Comparing your latest report ({fullDate(later.created_at)}) against the one before it (
-        {fullDate(earlier.created_at)}).{" "}
+        Showing your last {windowReports.length} report{windowReports.length === 1 ? "" : "s"}:{" "}
+        {fullDate(earlier.created_at)} to {fullDate(later.created_at)}
+        {reports.length > windowReports.length &&
+          ` (${reports.length - windowReports.length} earlier report${
+            reports.length - windowReports.length === 1 ? "" : "s"
+          } not shown)`}
+        .{" "}
         <Link
           href={`/compare?a=${earlier.id}&b=${later.id}`}
           className="underline underline-offset-4 hover:text-ink"
@@ -143,7 +156,11 @@ function TrendsBody({ reports }: { reports: ReportPoint[] }) {
               ? `$${later.result.documentSummary.totalSpendNumeric.toLocaleString()}`
               : "—"
           }
-          delta={spendDeltaPct != null ? `${spendDeltaPct >= 0 ? "+" : ""}${Math.round(spendDeltaPct)}% vs. previous` : null}
+          delta={
+            spendDeltaPct != null
+              ? `${spendDeltaPct >= 0 ? "+" : ""}${Math.round(spendDeltaPct)}% ${sinceLabel}`
+              : null
+          }
         />
         <StatTile
           label="Latest overall assessment"
@@ -154,8 +171,8 @@ function TrendsBody({ reports }: { reports: ReportPoint[] }) {
           value={String(later.result.redFlags.length)}
           delta={
             redFlagDelta === 0
-              ? "No change vs. previous"
-              : `${redFlagDelta > 0 ? "+" : ""}${redFlagDelta} vs. previous`
+              ? `No change ${sinceLabel}`
+              : `${redFlagDelta > 0 ? "+" : ""}${redFlagDelta} ${sinceLabel}`
           }
           deltaTone={redFlagDelta > 0 ? "severe" : redFlagDelta < 0 ? "good" : "neutral"}
         />
@@ -195,18 +212,14 @@ function TrendsBody({ reports }: { reports: ReportPoint[] }) {
         </div>
       </div>
 
-      <div className="mb-10">
-        <h2 className="font-serif text-lg font-semibold text-ink mb-3">
-          Channel spend, latest vs. previous
-        </h2>
-        <div className="rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
-          <ChannelDumbbellChart
-            rows={channelRows}
-            earlierLabel={shortDate(earlier.created_at)}
-            laterLabel={shortDate(later.created_at)}
-          />
+      {channelSeries.length > 0 && (
+        <div className="mb-10">
+          <h2 className="font-serif text-lg font-semibold text-ink mb-3">Channel spend over time</h2>
+          <div className="rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
+            <ChannelTrendChart series={channelSeries} />
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 }

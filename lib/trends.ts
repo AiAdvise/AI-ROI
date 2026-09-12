@@ -18,6 +18,82 @@ function pctLabel(pct: number): string {
   return `${rounded}%`;
 }
 
+// Fixed categorical order, validated for CVD-safe adjacent separation and a
+// normal-vision floor (see the dataviz skill's palette validator) - never
+// generate a color per channel, and never reuse the good/caution/severe
+// status colors here, since those are reserved for assessment state.
+const CHANNEL_COLORS = ["#b3541e", "#1f5f9e", "#a0266b", "#0891b2", "#5b3fa0"];
+const MAX_CHANNEL_SERIES = CHANNEL_COLORS.length;
+
+export interface ChannelSeries {
+  channel: string;
+  color: string;
+  points: { label: string; value: number | null }[];
+}
+
+function shortDate(iso: string) {
+  return new Date(iso).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+/**
+ * Pivots each report's channel spend into one series per channel across the
+ * whole window, so a channel's trend reads as a single line rather than a
+ * single before/after pair. Channels are matched by normalized name, same as
+ * the pairwise comparison in lib/compare.ts. Beyond MAX_CHANNEL_SERIES
+ * channels (ranked by total spend across the window), the smallest ones are
+ * folded into "Other" rather than generating more hues.
+ */
+export function channelSpendSeries(reports: ReportPoint[]): ChannelSeries[] {
+  const labels = reports.map((r) => shortDate(r.created_at));
+  const totalsByChannel = new Map<string, { display: string; total: number; values: (number | null)[] }>();
+
+  reports.forEach((r, i) => {
+    r.result.documentSummary.channelMix.forEach((c) => {
+      const key = c.channel.trim().toLowerCase();
+      if (!totalsByChannel.has(key)) {
+        totalsByChannel.set(key, {
+          display: c.channel,
+          total: 0,
+          values: new Array(reports.length).fill(null),
+        });
+      }
+      const entry = totalsByChannel.get(key)!;
+      if (c.spendNumeric != null) {
+        entry.values[i] = c.spendNumeric;
+        entry.total += c.spendNumeric;
+      }
+    });
+  });
+
+  const ranked = Array.from(totalsByChannel.values()).sort((a, b) => b.total - a.total);
+  const top = ranked.slice(0, MAX_CHANNEL_SERIES);
+  const rest = ranked.slice(MAX_CHANNEL_SERIES);
+
+  const series: ChannelSeries[] = top.map((entry, i) => ({
+    channel: entry.display,
+    color: CHANNEL_COLORS[i],
+    points: entry.values.map((value, i2) => ({ label: labels[i2], value })),
+  }));
+
+  if (rest.length > 0) {
+    const otherValues = new Array(reports.length).fill(null) as (number | null)[];
+    rest.forEach((entry) => {
+      entry.values.forEach((v, i) => {
+        if (v != null) {
+          otherValues[i] = (otherValues[i] ?? 0) + v;
+        }
+      });
+    });
+    series.push({
+      channel: "Other",
+      color: "#8a8478",
+      points: otherValues.map((value, i) => ({ label: labels[i], value })),
+    });
+  }
+
+  return series;
+}
+
 /**
  * Short, grounded callouts built only from real deltas already computed
  * elsewhere (assessment rank, spend %, red-flag counts, channel movers) -
