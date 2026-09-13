@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 
-const TRADES = ["HVAC", "Plumbing", "Roofing", "Electrical", "Other"];
+const TRADES = ["HVAC", "Plumbing", "Roofing", "Siding & Windows", "Electrical", "Other"];
 
 interface UploadFormProps {
   onSubmit: (file: File, trade: string | null, spendNotes: string | null) => void;
