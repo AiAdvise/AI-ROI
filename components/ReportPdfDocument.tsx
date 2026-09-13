@@ -101,6 +101,17 @@ const styles = StyleSheet.create({
     lineHeight: 1.5,
     marginBottom: 12,
   },
+  takeawaysLabel: {
+    fontSize: 8,
+    fontFamily: "Helvetica-Bold",
+    color: "#ffffff80",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 6,
+  },
+  takeawayRow: { flexDirection: "row", marginBottom: 4, gap: 6 },
+  takeawayBullet: { fontSize: 10, color: "#ffffff60" },
+  takeawayText: { fontSize: 10, color: "#ffffffd9", lineHeight: 1.5, flex: 1 },
   metaRow: {
     flexDirection: "row",
     gap: 24,
@@ -199,7 +210,19 @@ export default function ReportPdfDocument({ result }: { result: AnalysisResult }
               {overallLabel}
             </Text>
           </View>
-          <Text style={styles.summaryText}>{result.plainEnglishSummary}</Text>
+          {result.keyTakeaways.length > 0 ? (
+            <View style={{ marginBottom: 12 }}>
+              <Text style={styles.takeawaysLabel}>Key Takeaways</Text>
+              {result.keyTakeaways.map((t, i) => (
+                <View key={i} style={styles.takeawayRow}>
+                  <Text style={styles.takeawayBullet}>{"•"}</Text>
+                  <Text style={styles.takeawayText}>{t}</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.summaryText}>{result.plainEnglishSummary}</Text>
+          )}
           <View style={styles.metaRow}>
             {documentSummary.reportingPeriod && (
               <View>
@@ -325,6 +348,27 @@ export default function ReportPdfDocument({ result }: { result: AnalysisResult }
             ))
           )}
         </View>
+
+        {result.actionItems.length > 0 && (
+          <View style={styles.section}>
+            <Text style={styles.sectionEyebrow}>Things you can check yourself</Text>
+            <Text style={styles.sectionTitle}>Action items</Text>
+            {result.actionItems.map((a, i) => (
+              <View
+                key={i}
+                style={[styles.findingCard, { borderLeftColor: COLORS.accent }]}
+                wrap={false}
+              >
+                <Text style={styles.cardTitle}>{a.title}</Text>
+                <Text style={[styles.recommendationText, { marginTop: 4 }]}>{a.action}</Text>
+                <Text style={styles.cardBody}>{a.reasoning}</Text>
+                {a.relatedChannel && (
+                  <Text style={styles.cardMeta}>Channel: {a.relatedChannel}</Text>
+                )}
+              </View>
+            ))}
+          </View>
+        )}
 
         <View style={styles.questionsBox}>
           <Text style={styles.sectionEyebrow}>Bring this to your next call</Text>

@@ -77,6 +77,17 @@ export const RecommendationSchema = z.object({
   relatedChannel: nullableString,
 });
 
+// Distinct from RecommendationSchema: a recommendation is a media-buying
+// tactic change for the agency to make, an action item is something the
+// business owner can do themselves (their own website, tracking, CRM)
+// independent of the agency.
+export const ActionItemSchema = z.object({
+  title: z.string(),
+  action: z.string(),
+  reasoning: z.string(),
+  relatedChannel: nullableString,
+});
+
 export const AnalysisResultSchema = z.object({
   documentSummary: z.object({
     businessType: nullableString,
@@ -88,9 +99,14 @@ export const AnalysisResultSchema = z.object({
     reportedKpis: z.array(KpiSchema).default([]),
   }),
   plainEnglishSummary: z.string(),
+  // Optional/defaulted so reports saved before this field existed keep
+  // parsing fine (they just fall back to plainEnglishSummary in the UI)
+  // rather than failing Zod validation and going 404.
+  keyTakeaways: z.array(z.string()).default([]),
   redFlags: z.array(RedFlagSchema).default([]),
   benchmarkComparisons: z.array(BenchmarkComparisonSchema).default([]),
   recommendations: z.array(RecommendationSchema).default([]),
+  actionItems: z.array(ActionItemSchema).default([]),
   questionsToAsk: z.array(AgencyQuestionSchema).default([]),
   overallAssessment: z.enum(["looks_reasonable", "some_concerns", "significant_concerns"]),
 });
