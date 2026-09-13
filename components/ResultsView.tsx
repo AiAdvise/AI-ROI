@@ -82,13 +82,58 @@ function benchmarkRangeText(b: AnalysisResult["benchmarkComparisons"][number]): 
   return b.benchmarkRange;
 }
 
-function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
+function SectionHeading({
+  eyebrow,
+  title,
+  count,
+}: {
+  eyebrow: string;
+  title: string;
+  count?: number;
+}) {
   return (
-    <div className="mb-4">
-      <p className="text-xs font-semibold uppercase tracking-widest text-accent print:text-accent">
-        {eyebrow}
-      </p>
-      <h2 className="gradient-text font-serif text-2xl font-semibold mt-1">{title}</h2>
+    <div className="mb-4 flex items-baseline gap-2.5">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-widest text-accent print:text-accent">
+          {eyebrow}
+        </p>
+        <h2 className="gradient-text font-serif text-2xl font-semibold mt-1">{title}</h2>
+      </div>
+      {count != null && count > 0 && (
+        <span className="rounded-full bg-ink/10 px-2 py-0.5 text-xs font-semibold text-ink-soft print:bg-transparent print:border print:border-line">
+          {count}
+        </span>
+      )}
+    </div>
+  );
+}
+
+// A section's frame color is a decorative identity for that section, kept
+// separate from the good/caution/severe status colors used inside its own
+// cards - so a section is recognizable at a glance while its cards still
+// carry their own meaning.
+const SECTION_FRAME_CLASS: Record<"violet" | "blue" | "green" | "rose" | "accent", string> = {
+  violet: "border-brand-c/30 bg-brand-c/5",
+  blue: "border-brand-a/30 bg-brand-a/5",
+  green: "border-good/30 bg-good/5",
+  rose: "border-brand-b/30 bg-brand-b/5",
+  accent: "border-accent/20 bg-accent-soft",
+};
+
+function SectionFrame({
+  tone,
+  className,
+  children,
+}: {
+  tone: "violet" | "blue" | "green" | "rose" | "accent";
+  className?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`rounded-2xl border-2 p-5 sm:p-6 print:border-line print:bg-white print:border ${SECTION_FRAME_CLASS[tone]} ${className ?? ""}`}
+    >
+      {children}
     </div>
   );
 }
@@ -257,130 +302,142 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
         </Reveal>
       )}
 
-      <div className="mt-12">
-        <Reveal>
-          <SectionHeading eyebrow="What we found" title="Findings" />
-        </Reveal>
-        {result.redFlags.length === 0 ? (
-          <p className="text-sm text-ink-soft">No red flags identified.</p>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 print:grid-cols-1">
-            {result.redFlags.map((flag, i) => {
-              const meta = SEVERITY_META[flag.severity];
-              return (
-                <Reveal key={i} delay={Math.min(i, 6) * 70}>
-                  <div className={`card-lift rounded-lg border p-4 shadow-sm ${meta.card}`}>
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-baseline gap-2">
-                        <span className="font-serif text-sm text-ink-soft/70">
-                          {String(i + 1).padStart(2, "0")}
+      <Reveal className="mt-12">
+        <SectionFrame tone="violet">
+          <SectionHeading eyebrow="What we found" title="Findings" count={result.redFlags.length} />
+          {result.redFlags.length === 0 ? (
+            <p className="text-sm text-ink-soft">No red flags identified.</p>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 print:grid-cols-1">
+              {result.redFlags.map((flag, i) => {
+                const meta = SEVERITY_META[flag.severity];
+                return (
+                  <Reveal key={i} delay={Math.min(i, 6) * 70}>
+                    <div className={`card-lift rounded-lg border p-4 shadow-sm ${meta.card}`}>
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-baseline gap-2">
+                          <span className="font-serif text-sm text-ink-soft/70">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <h3 className="font-medium text-ink">{flag.title}</h3>
+                        </div>
+                        <span
+                          className={`text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0 print:bg-transparent print:text-ink-soft ${meta.badge}`}
+                        >
+                          {meta.label}
                         </span>
-                        <h3 className="font-medium text-ink">{flag.title}</h3>
                       </div>
-                      <span
-                        className={`text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full shrink-0 print:bg-transparent print:text-ink-soft ${meta.badge}`}
-                      >
-                        {meta.label}
-                      </span>
+                      <p className="text-sm text-ink-soft mt-2 leading-relaxed">{flag.reasoning}</p>
+                      {flag.relatedChannel && (
+                        <p className="text-xs mt-2 text-ink-soft/70">
+                          Channel: {flag.relatedChannel}
+                        </p>
+                      )}
                     </div>
-                    <p className="text-sm text-ink-soft mt-2 leading-relaxed">{flag.reasoning}</p>
-                    {flag.relatedChannel && (
-                      <p className="text-xs mt-2 text-ink-soft/70">
-                        Channel: {flag.relatedChannel}
+                  </Reveal>
+                );
+              })}
+            </div>
+          )}
+        </SectionFrame>
+      </Reveal>
+
+      <Reveal className="mt-8">
+        <SectionFrame tone="blue">
+          <SectionHeading
+            eyebrow="How the numbers stack up"
+            title="Benchmark comparisons"
+            count={result.benchmarkComparisons.length}
+          />
+          {result.benchmarkComparisons.length === 0 ? (
+            <p className="text-sm text-ink-soft">No benchmark comparisons available.</p>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 print:grid-cols-1">
+              {result.benchmarkComparisons.map((b, i) => {
+                const meta = ASSESSMENT_META[b.assessment] ?? ASSESSMENT_META.no_benchmark_available;
+                return (
+                  <Reveal key={i} delay={Math.min(i, 6) * 70}>
+                    <div className={`card-lift rounded-lg border p-4 shadow-sm ${meta.card}`}>
+                      <div className="flex items-center justify-between gap-3">
+                        <h3 className="font-medium text-ink">{b.metric}</h3>
+                        <span
+                          className={`text-xs font-medium px-2 py-1 rounded-full shrink-0 print:bg-transparent print:text-ink-soft ${meta.badge}`}
+                        >
+                          {meta.label}
+                        </span>
+                      </div>
+                      <p className="text-sm text-ink-soft mt-1.5">
+                        Reported: <span className="font-medium text-ink">{b.reportedValue}</span> -
+                        Benchmark:{" "}
+                        <span className="font-medium text-ink">{benchmarkRangeText(b)}</span>
                       </p>
+                      <p className="text-sm text-ink-soft mt-2 leading-relaxed">{b.commentary}</p>
+                    </div>
+                  </Reveal>
+                );
+              })}
+            </div>
+          )}
+        </SectionFrame>
+      </Reveal>
+
+      <Reveal className="mt-8">
+        <SectionFrame tone="green">
+          <SectionHeading
+            eyebrow="What a media buyer would suggest"
+            title="Recommendations"
+            count={result.recommendations.length}
+          />
+          {result.recommendations.length === 0 ? (
+            <p className="text-sm text-ink-soft">
+              No specific recommendations - nothing in this report points to a concrete, grounded
+              change to suggest.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 print:grid-cols-1">
+              {result.recommendations.map((r, i) => (
+                <Reveal key={i} delay={Math.min(i, 6) * 70}>
+                  <div className="card-lift rounded-lg border border-good/30 bg-good-soft p-4 shadow-sm print:bg-white print:border-line">
+                    <h3 className="font-medium text-ink">{r.title}</h3>
+                    <p className="text-sm text-ink mt-2 leading-relaxed font-medium">
+                      {r.recommendation}
+                    </p>
+                    <p className="text-sm text-ink-soft mt-1.5 leading-relaxed">{r.reasoning}</p>
+                    {r.relatedChannel && (
+                      <p className="text-xs mt-2 text-ink-soft/70">Channel: {r.relatedChannel}</p>
                     )}
                   </div>
                 </Reveal>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-12">
-        <Reveal>
-          <SectionHeading eyebrow="How the numbers stack up" title="Benchmark comparisons" />
-        </Reveal>
-        {result.benchmarkComparisons.length === 0 ? (
-          <p className="text-sm text-ink-soft">No benchmark comparisons available.</p>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 print:grid-cols-1">
-            {result.benchmarkComparisons.map((b, i) => {
-              const meta = ASSESSMENT_META[b.assessment] ?? ASSESSMENT_META.no_benchmark_available;
-              return (
-                <Reveal key={i} delay={Math.min(i, 6) * 70}>
-                  <div className={`card-lift rounded-lg border p-4 shadow-sm ${meta.card}`}>
-                    <div className="flex items-center justify-between gap-3">
-                      <h3 className="font-medium text-ink">{b.metric}</h3>
-                      <span
-                        className={`text-xs font-medium px-2 py-1 rounded-full shrink-0 print:bg-transparent print:text-ink-soft ${meta.badge}`}
-                      >
-                        {meta.label}
-                      </span>
-                    </div>
-                    <p className="text-sm text-ink-soft mt-1.5">
-                      Reported: <span className="font-medium text-ink">{b.reportedValue}</span> -
-                      Benchmark:{" "}
-                      <span className="font-medium text-ink">{benchmarkRangeText(b)}</span>
-                    </p>
-                    <p className="text-sm text-ink-soft mt-2 leading-relaxed">{b.commentary}</p>
-                  </div>
-                </Reveal>
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-12">
-        <Reveal>
-          <SectionHeading eyebrow="What a media buyer would suggest" title="Recommendations" />
-        </Reveal>
-        {result.recommendations.length === 0 ? (
-          <p className="text-sm text-ink-soft">
-            No specific recommendations - nothing in this report points to a concrete, grounded
-            change to suggest.
-          </p>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 print:grid-cols-1">
-            {result.recommendations.map((r, i) => (
-              <Reveal key={i} delay={Math.min(i, 6) * 70}>
-                <div className="card-lift rounded-lg border border-good/30 bg-good-soft p-4 shadow-sm print:bg-white print:border-line">
-                  <h3 className="font-medium text-ink">{r.title}</h3>
-                  <p className="text-sm text-ink mt-2 leading-relaxed font-medium">
-                    {r.recommendation}
-                  </p>
-                  <p className="text-sm text-ink-soft mt-1.5 leading-relaxed">{r.reasoning}</p>
-                  {r.relatedChannel && (
-                    <p className="text-xs mt-2 text-ink-soft/70">Channel: {r.relatedChannel}</p>
-                  )}
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
+        </SectionFrame>
+      </Reveal>
 
       {result.actionItems.length > 0 && (
-        <div className="mt-12">
-          <Reveal>
-            <SectionHeading eyebrow="Things you can check yourself" title="Action items" />
-          </Reveal>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 print:grid-cols-1">
-            {result.actionItems.map((a, i) => (
-              <Reveal key={i} delay={Math.min(i, 6) * 70}>
-                <div className="card-lift rounded-lg border border-brand-a/30 bg-brand-a/10 p-4 shadow-sm print:bg-white print:border-line">
-                  <h3 className="font-medium text-ink">{a.title}</h3>
-                  <p className="text-sm text-ink mt-2 leading-relaxed font-medium">{a.action}</p>
-                  <p className="text-sm text-ink-soft mt-1.5 leading-relaxed">{a.reasoning}</p>
-                  {a.relatedChannel && (
-                    <p className="text-xs mt-2 text-ink-soft/70">Channel: {a.relatedChannel}</p>
-                  )}
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
+        <Reveal className="mt-8">
+          <SectionFrame tone="rose">
+            <SectionHeading
+              eyebrow="Things you can check yourself"
+              title="Action items"
+              count={result.actionItems.length}
+            />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 print:grid-cols-1">
+              {result.actionItems.map((a, i) => (
+                <Reveal key={i} delay={Math.min(i, 6) * 70}>
+                  <div className="card-lift rounded-lg border border-brand-b/30 bg-paper-raised p-4 shadow-sm print:bg-white print:border-line">
+                    <h3 className="font-medium text-ink">{a.title}</h3>
+                    <p className="text-sm text-ink mt-2 leading-relaxed font-medium">{a.action}</p>
+                    <p className="text-sm text-ink-soft mt-1.5 leading-relaxed">{a.reasoning}</p>
+                    {a.relatedChannel && (
+                      <p className="text-xs mt-2 text-ink-soft/70">Channel: {a.relatedChannel}</p>
+                    )}
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </SectionFrame>
+        </Reveal>
       )}
 
       <Reveal className="mt-12 mb-4">
