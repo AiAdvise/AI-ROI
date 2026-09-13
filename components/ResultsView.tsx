@@ -5,7 +5,11 @@ import ChannelSpendDonut from "@/components/charts/ChannelSpendDonut";
 import FunnelBar from "@/components/charts/FunnelBar";
 import { computeHealthScore } from "@/lib/score";
 import { funnelBreakdown } from "@/lib/funnel";
-import { channelColorMap, colorForChannel } from "@/lib/channelColors";
+import { channelColorMap, colorForChannel, OTHER_CHANNEL_COLOR } from "@/lib/channelColors";
+
+function channelKey(channel: string | null): string {
+  return channel ? channel.trim().toLowerCase() : "";
+}
 
 const GRADE_TONE_CLASS: Record<"good" | "caution" | "severe", string> = {
   good: "bg-good text-white",
@@ -147,6 +151,23 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
   const hasDonut =
     documentSummary.channelMix.filter((c) => c.spendNumeric != null && c.spendNumeric > 0).length >= 2;
 
+  // Group each reported KPI under its channel's card so spend, notes, and
+  // performance stats for a tactic live in one place instead of two
+  // separately-broken-down sections. Anything that doesn't match a listed
+  // channel (including report-level KPIs with no channel at all) falls
+  // through to a shared "Other metrics" card rather than being dropped.
+  const kpisByChannel = new Map<string, AnalysisResult["documentSummary"]["reportedKpis"]>();
+  documentSummary.reportedKpis.forEach((k) => {
+    const key = channelKey(k.channel);
+    const bucket = kpisByChannel.get(key);
+    if (bucket) bucket.push(k);
+    else kpisByChannel.set(key, [k]);
+  });
+  const listedChannelKeys = new Set(documentSummary.channelMix.map((c) => channelKey(c.channel)));
+  const otherKpis = documentSummary.reportedKpis.filter(
+    (k) => !listedChannelKeys.has(channelKey(k.channel)),
+  );
+
   return (
     <div className="w-full max-w-4xl mx-auto">
       <Reveal>
@@ -244,61 +265,68 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
         </Reveal>
       )}
 
-      {documentSummary.channelMix.length > 0 && (
+      {(documentSummary.channelMix.length > 0 || otherKpis.length > 0) && (
         <Reveal delay={80} className="mt-6">
-          <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2">
-            Full channel breakdown
-          </p>
-          <div className="card-lift overflow-x-auto rounded-xl border border-line bg-paper-raised shadow-sm">
-            <table className="w-full text-sm border-collapse">
-              <thead>
-                <tr className="text-left text-ink-soft border-b border-line">
-                  <th className="py-3 px-4 font-medium">Channel</th>
-                  <th className="py-3 px-4 font-medium">Spend</th>
-                  <th className="py-3 px-4 font-medium">% of total</th>
-                  <th className="py-3 px-4 font-medium">Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {documentSummary.channelMix.map((c, i) => (
-                  <tr key={i} className="border-b border-line last:border-0">
-                    <td className="py-3 px-4 font-medium text-ink">{c.channel}</td>
-                    <td className="py-3 px-4 text-ink-soft">{c.spend ?? "-"}</td>
-                    <td className="py-3 px-4 text-ink-soft">{c.percentOfTotal ?? "-"}</td>
-                    <td className="py-3 px-4 text-ink-soft">{c.notes ?? "-"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Reveal>
-      )}
-
-      {documentSummary.reportedKpis.length > 0 && (
-        <Reveal delay={140} className="mt-4">
-          <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 shadow-sm">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-3">
-              Reported KPIs
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {documentSummary.reportedKpis.map((k, i) => {
-                const color = colorForChannel(kpiColorMap, k.channel);
-                return (
+          <SectionHeading eyebrow="How each tactic performed" title="Channel performance" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 print:grid-cols-1">
+            {documentSummary.channelMix.map((c, i) => {
+              const color = colorForChannel(kpiColorMap, c.channel);
+              const kpis = kpisByChannel.get(channelKey(c.channel)) ?? [];
+              return (
+                <Reveal key={i} delay={Math.min(i, 6) * 70}>
                   <div
-                    key={i}
-                    className="rounded-lg bg-paper p-2.5"
-                    style={{ borderLeft: `3px solid ${color}` }}
+                    className="card-lift rounded-xl border border-line bg-paper-raised p-4 shadow-sm"
+                    style={{ borderTop: `3px solid ${color}` }}
                   >
-                    <p className="text-[11px] uppercase tracking-wide text-ink-soft truncate">
-                      {k.name}
-                      {k.channel ? ` · ${k.channel}` : ""}
-                    </p>
-                    <p className="mt-0.5 text-sm font-semibold text-ink">{k.value}</p>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <h3 className="font-medium text-ink truncate">{c.channel}</h3>
+                      <span className="text-xs font-medium text-ink-soft shrink-0">
+                        {c.spend ?? "-"}
+                        {c.percentOfTotal ? ` · ${c.percentOfTotal}` : ""}
+                      </span>
+                    </div>
+                    {c.notes && (
+                      <p className="mt-1.5 text-xs text-ink-soft leading-relaxed">{c.notes}</p>
+                    )}
+                    {kpis.length > 0 && (
+                      <div className="mt-3 grid grid-cols-2 gap-2">
+                        {kpis.map((k, j) => (
+                          <div key={j} className="rounded-lg bg-paper p-2.5">
+                            <p className="text-[11px] uppercase tracking-wide text-ink-soft truncate">
+                              {k.name}
+                            </p>
+                            <p className="mt-0.5 text-sm font-semibold text-ink">{k.value}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                );
-              })}
-            </div>
+                </Reveal>
+              );
+            })}
           </div>
+
+          {otherKpis.length > 0 && (
+            <Reveal delay={Math.min(documentSummary.channelMix.length, 6) * 70} className="mt-3">
+              <div
+                className="card-lift rounded-xl border border-line bg-paper-raised p-4 shadow-sm"
+                style={{ borderTop: `3px solid ${OTHER_CHANNEL_COLOR}` }}
+              >
+                <h3 className="font-medium text-ink">Other metrics</h3>
+                <div className="mt-3 grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {otherKpis.map((k, j) => (
+                    <div key={j} className="rounded-lg bg-paper p-2.5">
+                      <p className="text-[11px] uppercase tracking-wide text-ink-soft truncate">
+                        {k.name}
+                        {k.channel ? ` · ${k.channel}` : ""}
+                      </p>
+                      <p className="mt-0.5 text-sm font-semibold text-ink">{k.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </Reveal>
+          )}
         </Reveal>
       )}
 
