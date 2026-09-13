@@ -12,10 +12,14 @@ import {
   sortReportsByEffectiveDate,
   type ReportPoint,
 } from "@/lib/trends";
+import { kpiTotalSeries, costPerLeadSeries } from "@/lib/kpiTrends";
+import { computeHealthScore, TONE_HEX } from "@/lib/score";
 import StatTile from "@/components/StatTile";
 import SpendTrendChart from "@/components/charts/SpendTrendChart";
 import AssessmentTimeline from "@/components/charts/AssessmentTimeline";
 import ChannelTrendChart from "@/components/charts/ChannelTrendChart";
+import CostPerLeadChart from "@/components/charts/CostPerLeadChart";
+import MetricBarChart from "@/components/charts/MetricBarChart";
 import BrandMark from "@/components/BrandMark";
 import GradientBlobs from "@/components/GradientBlobs";
 import Reveal from "@/components/Reveal";
@@ -142,6 +146,20 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
     assessment: r.result.overallAssessment,
   }));
 
+  const healthPoints = windowReports.map((r) => {
+    const health = computeHealthScore(r.result);
+    return {
+      label: monthLabel(reportEffectiveDate(r)),
+      value: health.score,
+      color: TONE_HEX[health.tone],
+      tooltip: `${monthLabel(reportEffectiveDate(r))}: ${health.score}/100 (${health.grade})`,
+    };
+  });
+
+  const impressionsPoints = kpiTotalSeries(windowReports, "Impressions");
+  const clicksPoints = kpiTotalSeries(windowReports, "Clicks");
+  const cplPoints = costPerLeadSeries(windowReports);
+
   const spendDeltaPct = percentChange(
     earlier.result.documentSummary.totalSpendNumeric,
     later.result.documentSummary.totalSpendNumeric,
@@ -263,6 +281,33 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
         </Reveal>
       )}
 
+      {cplPoints.length >= 2 && (
+        <Reveal className="mb-10">
+          <h2 className="font-serif text-lg font-semibold text-ink mb-3">Cost per lead over time</h2>
+          <p className="text-xs text-ink-soft/70 -mt-1.5 mb-3">
+            Total spend divided by calls + form fills - lower is better.
+          </p>
+          <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
+            <CostPerLeadChart points={cplPoints} />
+          </div>
+        </Reveal>
+      )}
+
+      {healthPoints.length >= 2 && (
+        <Reveal className="mb-10">
+          <h2 className="font-serif text-lg font-semibold text-ink mb-3">Health score over time</h2>
+          <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
+            <MetricBarChart
+              points={healthPoints}
+              color={TONE_HEX.good}
+              formatValue={(v) => String(Math.round(v))}
+              ariaLabel="Health score over time"
+              width={640}
+            />
+          </div>
+        </Reveal>
+      )}
+
       <Reveal className="mb-10">
         <h2 className="font-serif text-lg font-semibold text-ink mb-3">
           Overall assessment over time
@@ -271,6 +316,40 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
           <AssessmentTimeline points={assessmentPoints} />
         </div>
       </Reveal>
+
+      {(impressionsPoints.length >= 2 || clicksPoints.length >= 2) && (
+        <Reveal className="mb-10">
+          <h2 className="font-serif text-lg font-semibold text-ink mb-3">Reach &amp; clicks over time</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {impressionsPoints.length >= 2 && (
+              <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
+                <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2">
+                  Impressions
+                </p>
+                <MetricBarChart
+                  points={impressionsPoints}
+                  color="#1f5f9e"
+                  formatValue={(v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : String(Math.round(v)))}
+                  ariaLabel="Impressions over time"
+                />
+              </div>
+            )}
+            {clicksPoints.length >= 2 && (
+              <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
+                <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2">
+                  Clicks
+                </p>
+                <MetricBarChart
+                  points={clicksPoints}
+                  color="#a0266b"
+                  formatValue={(v) => String(Math.round(v))}
+                  ariaLabel="Clicks over time"
+                />
+              </div>
+            )}
+          </div>
+        </Reveal>
+      )}
 
       {channelSeries.length > 0 && (
         <Reveal className="mb-10">

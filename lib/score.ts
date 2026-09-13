@@ -6,6 +6,14 @@ export interface HealthScore {
   tone: "good" | "caution" | "severe";
 }
 
+// Matches the good/caution/severe tokens in tailwind.config.ts exactly, for
+// contexts (inline SVG fills) that can't reach a Tailwind class.
+export const TONE_HEX: Record<HealthScore["tone"], string> = {
+  good: "#3f6b4a",
+  caution: "#95610f",
+  severe: "#9f2b1f",
+};
+
 const GRADE_BANDS: { min: number; grade: HealthScore["grade"]; tone: HealthScore["tone"] }[] = [
   { min: 90, grade: "A", tone: "good" },
   { min: 75, grade: "B", tone: "good" },

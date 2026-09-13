@@ -1,10 +1,6 @@
 import type { AnalysisResult } from "@/lib/types";
+import { channelColorMap, colorForChannel, CHANNEL_COLORS, OTHER_CHANNEL_COLOR } from "@/lib/channelColors";
 
-// Same validated categorical order used for the trend charts (lib/trends.ts)
-// - kept identical here so a channel's color means the same thing everywhere
-// in the app.
-const CHANNEL_COLORS = ["#b3541e", "#1f5f9e", "#a0266b", "#0891b2", "#5b3fa0"];
-const OTHER_COLOR = "#8a8478";
 const MAX_SLICES = CHANNEL_COLORS.length;
 
 const SIZE = 200;
@@ -24,19 +20,20 @@ export default function ChannelSpendDonut({
   // slice alone is just the total, and any fewer isn't a real breakdown.
   if (withSpend.length < 2) return null;
 
+  const colorMap = channelColorMap(channelMix);
   const total = withSpend.reduce((sum, c) => sum + (c.spendNumeric as number), 0);
   const ranked = [...withSpend].sort((a, b) => (b.spendNumeric as number) - (a.spendNumeric as number));
   const top = ranked.slice(0, MAX_SLICES);
   const rest = ranked.slice(MAX_SLICES);
   const restTotal = rest.reduce((sum, c) => sum + (c.spendNumeric as number), 0);
 
-  const slices = top.map((c, i) => ({
+  const slices = top.map((c) => ({
     label: c.channel,
     value: c.spendNumeric as number,
-    color: CHANNEL_COLORS[i],
+    color: colorForChannel(colorMap, c.channel),
   }));
   if (restTotal > 0) {
-    slices.push({ label: "Other", value: restTotal, color: OTHER_COLOR });
+    slices.push({ label: "Other", value: restTotal, color: OTHER_CHANNEL_COLOR });
   }
 
   let cursor = 0;
