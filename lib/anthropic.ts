@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { DIAGNOSTIC_FRAMEWORK } from "./framework";
-import { AnalysisResultSchema, type AnalysisResult } from "./types";
+import { AnalysisResultSchema, SalesDataResultSchema, type AnalysisResult, type SalesDataResult } from "./types";
 
 const MODEL = "claude-sonnet-5";
 
@@ -117,20 +117,31 @@ class MalformedOutputError extends Error {
   }
 }
 
-export async function analyzeMediaPlan(input: AnalyzeInput): Promise<AnalysisResult> {
+/**
+ * Runs `attempt` and, if it fails with a MalformedOutputError, runs it again
+ * once (a fresh API call) before giving up - shared by every extraction call
+ * in this file, since a cut-off/unparseable/schema-mismatched response is
+ * usually a one-off generation glitch rather than a systemic problem with
+ * the input. Any other error (a real API/auth failure) propagates immediately.
+ */
+async function withMalformedOutputRetry<T>(attempt: () => Promise<T>): Promise<T> {
   try {
-    return await runAnalysisAttempt(input);
+    return await attempt();
   } catch (err) {
     if (!(err instanceof MalformedOutputError)) throw err;
-    console.warn("Analysis attempt produced malformed output, retrying once:", err.message);
+    console.warn("Attempt produced malformed output, retrying once:", err.message);
     try {
-      return await runAnalysisAttempt(input);
+      return await attempt();
     } catch (retryErr) {
       if (!(retryErr instanceof MalformedOutputError)) throw retryErr;
-      console.error("Analysis failed twice:", retryErr.message);
+      console.error("Attempt failed twice:", retryErr.message);
       throw new Error(retryErr.userMessage);
     }
   }
+}
+
+export async function analyzeMediaPlan(input: AnalyzeInput): Promise<AnalysisResult> {
+  return withMalformedOutputRetry(() => runAnalysisAttempt(input));
 }
 
 async function runAnalysisAttempt(input: AnalyzeInput): Promise<AnalysisResult> {
@@ -221,6 +232,130 @@ async function runAnalysisAttempt(input: AnalyzeInput): Promise<AnalysisResult> 
     throw new MalformedOutputError(
       `schema mismatch: ${result.error.message}`,
       "The analysis didn't return a result. Please try again.",
+    );
+  }
+
+  return result.data;
+}
+
+const SALES_SYSTEM_PROMPT = `
+You are extracting a simple sales summary from a home-services business owner's CRM or sales export (e.g. QuickBooks, ServiceTitan, Jobber, a spreadsheet export, or a screenshot/PDF of a sales dashboard). This is NOT a media/ad diagnostic - there is no framework to apply, no channels, no benchmarks. Your only job is to pull out a small set of numbers so this business's sales can be tracked month over month, the same way their ad reports already are.
+
+Extract:
+- "reportingPeriod": the human-readable period the document covers (e.g. "August 2026", "Q3 2026", "8/1/26 - 8/31/26"). If the document covers multiple distinct months (e.g. a 6-month sales-by-month export), do not split it into separate periods - one upload always produces exactly one data point, so instead set this to the full range covered (e.g. "March 2026 - August 2026") and report the TOTAL across that whole range in the fields below.
+- "reportingPeriodStart": the ISO date (YYYY-MM-DD) of the first day of that period. Null if the document doesn't clearly state one - never guess from today's date or the file name.
+- "totalRevenue" / "totalRevenueNumeric": total sales revenue for the period, as both a display string (e.g. "$42,500") and a bare number (42500, no currency symbol or commas). Null if not stated.
+- "dealCount" / "dealCountNumeric": the number of sales, jobs, invoices, or closed deals in the period - whatever the document's own unit of "one sale" is. Null if not stated.
+- "avgDealSize" / "avgDealSizeNumeric": the average revenue per sale/job/deal. Use the document's own figure if it states one directly; otherwise, if both totalRevenue and dealCount are known, compute it yourself (totalRevenue / dealCount) rather than leaving it null. Null only if neither is possible.
+- "notes": one or two short, plain-English sentences flagging anything worth knowing - e.g. the file mixes multiple currencies, revenue figures look like they may exclude refunds/cancellations, or the numbers seem internally inconsistent. Null if there's nothing notable.
+
+Never invent a number that isn't in the document. If the uploaded file doesn't look like sales/CRM data at all, still return the JSON shape with whatever you can genuinely extract and null for the rest - never refuse to produce it.
+
+Respond with ONLY a single JSON object - no markdown fences, no commentary before or after - matching exactly this shape:
+
+{
+  "reportingPeriod": string | null,
+  "reportingPeriodStart": string | null,
+  "totalRevenue": string | null,
+  "totalRevenueNumeric": number | null,
+  "dealCount": string | null,
+  "dealCountNumeric": number | null,
+  "avgDealSize": string | null,
+  "avgDealSizeNumeric": number | null,
+  "notes": string | null
+}
+`.trim();
+
+export type SalesFileInput =
+  | { kind: "pdf"; base64Data: string }
+  | { kind: "image"; base64Data: string; mediaType: "image/png" | "image/jpeg" | "image/webp" | "image/gif" }
+  | { kind: "csv"; text: string };
+
+export async function analyzeSalesData(
+  file: SalesFileInput,
+  notes: string | null,
+): Promise<SalesDataResult> {
+  return withMalformedOutputRetry(() => runSalesAttempt(file, notes));
+}
+
+async function runSalesAttempt(file: SalesFileInput, notes: string | null): Promise<SalesDataResult> {
+  const anthropic = getClient();
+
+  // CSV isn't a supported "document" media type for the API's document
+  // content block (that's PDF-only) - a CSV export is plain text anyway, so
+  // it goes in as a text block instead of being treated as a binary file.
+  const fileBlock: Anthropic.Messages.ContentBlockParam =
+    file.kind === "pdf"
+      ? {
+          type: "document",
+          source: { type: "base64", media_type: "application/pdf", data: file.base64Data },
+        }
+      : file.kind === "image"
+        ? {
+            type: "image",
+            source: { type: "base64", media_type: file.mediaType, data: file.base64Data },
+          }
+        : { type: "text", text: `CSV file contents:\n\n${file.text}` };
+
+  const contextLines: string[] = [];
+  if (notes) {
+    contextLines.push(`The business owner adds this context: "${notes}"`);
+  }
+  contextLines.push(
+    "Extract the sales summary now and return the JSON object described in your instructions.",
+  );
+  const instructionText = contextLines.join("\n\n");
+
+  const stream = anthropic.messages.stream({
+    model: MODEL,
+    max_tokens: 2000,
+    system: SALES_SYSTEM_PROMPT,
+    output_config: { effort: "low" },
+    messages: [
+      {
+        role: "user",
+        content: [fileBlock, { type: "text", text: instructionText }],
+      },
+    ],
+  });
+
+  const response = await stream.finalMessage();
+
+  if (response.stop_reason === "max_tokens") {
+    throw new MalformedOutputError(
+      "stop_reason=max_tokens",
+      "The extraction was too long and got cut off. Please try again.",
+    );
+  }
+
+  const textBlock = response.content.find(
+    (block): block is Anthropic.Messages.TextBlock => block.type === "text",
+  );
+
+  if (!textBlock) {
+    throw new MalformedOutputError(
+      "no text content in response",
+      "The extraction didn't return a result. Please try again.",
+    );
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = extractJson(textBlock.text);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "unknown error";
+    throw new MalformedOutputError(
+      `JSON extraction failed: ${message}`,
+      "The extraction didn't return a result. Please try again.",
+    );
+  }
+
+  const result = SalesDataResultSchema.safeParse(parsed);
+
+  if (!result.success) {
+    throw new MalformedOutputError(
+      `schema mismatch: ${result.error.message}`,
+      "The extraction didn't return a result. Please try again.",
     );
   }
 

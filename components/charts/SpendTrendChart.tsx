@@ -19,7 +19,19 @@ function niceCeil(n: number): number {
   return niceFrac * base;
 }
 
-export default function SpendTrendChart({ points }: { points: SpendTrendPoint[] }) {
+export default function SpendTrendChart({
+  points,
+  color = "#b3541e",
+  ariaLabel = "Total spend over time",
+}: {
+  points: SpendTrendPoint[];
+  /** Decorative line/dot color - defaults to the spend-chart accent. Pass a
+   * distinct validated color when reusing this component for a different
+   * dollar-denominated series (e.g. revenue) so the two don't look identical
+   * when shown side by side. */
+  color?: string;
+  ariaLabel?: string;
+}) {
   const plotW = WIDTH - PAD_LEFT - PAD_RIGHT;
   const plotH = HEIGHT - PAD_TOP - PAD_BOTTOM;
 
@@ -48,7 +60,7 @@ export default function SpendTrendChart({ points }: { points: SpendTrendPoint[] 
   const labelEvery = Math.ceil(points.length / 6);
 
   return (
-    <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full h-auto" role="img" aria-label="Total spend over time">
+    <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full h-auto" role="img" aria-label={ariaLabel}>
       {gridLines.map((g) => {
         const y = PAD_TOP + plotH - g * plotH;
         return (
@@ -72,12 +84,12 @@ export default function SpendTrendChart({ points }: { points: SpendTrendPoint[] 
         );
       })}
 
-      <path d={linePath} fill="none" stroke="#b3541e" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+      <path d={linePath} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
 
       {points.map((p, i) => {
         const { x, y } = xy(i, p.value);
         return (
-          <circle key={i} cx={x} cy={y} r={4} fill="#b3541e" stroke="#ffffff" strokeWidth={2}>
+          <circle key={i} cx={x} cy={y} r={4} fill={color} stroke="#ffffff" strokeWidth={2}>
             <title>{`${p.label}: $${p.value.toLocaleString()}`}</title>
           </circle>
         );
