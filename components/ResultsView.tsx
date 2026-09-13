@@ -1,5 +1,16 @@
 import type { AnalysisResult } from "@/lib/types";
 import Reveal from "@/components/Reveal";
+import EmailDraft from "@/components/EmailDraft";
+import ChannelSpendDonut from "@/components/charts/ChannelSpendDonut";
+import FunnelBar from "@/components/charts/FunnelBar";
+import { computeHealthScore } from "@/lib/score";
+import { funnelBreakdown } from "@/lib/funnel";
+
+const GRADE_TONE_CLASS: Record<"good" | "caution" | "severe", string> = {
+  good: "bg-good text-white",
+  caution: "bg-caution text-white",
+  severe: "bg-severe text-white",
+};
 
 // Each severity gets a full-card tint + border, not just a small badge, so
 // the cards read as distinctly colored at a glance rather than a uniform
@@ -84,6 +95,10 @@ function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) 
 export default function ResultsView({ result }: { result: AnalysisResult }) {
   const overall = OVERALL_META[result.overallAssessment];
   const { documentSummary } = result;
+  const health = computeHealthScore(result);
+  const funnel = funnelBreakdown(result);
+  const hasDonut =
+    documentSummary.channelMix.filter((c) => c.spendNumeric != null && c.spendNumeric > 0).length >= 2;
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -97,48 +112,80 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
             aria-hidden
             className="no-print pointer-events-none absolute -bottom-20 -left-16 h-64 w-64 rounded-full bg-brand-c/25 blur-3xl animate-floatBlobSlow"
           />
-          <div className="relative">
-            <p className="text-xs font-semibold uppercase tracking-widest text-white/50 print:text-ink-soft">
-              Diagnostic Summary
-            </p>
-            <div className="mt-2 flex flex-wrap items-center gap-3">
-              <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-white print:text-ink">
-                {documentSummary.businessType ?? "Media Plan Review"}
-              </h1>
-              <span
-                className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 backdrop-blur-sm ${overall.className}`}
-              >
-                {overall.label}
-              </span>
-            </div>
-            <p className="mt-4 text-white/85 leading-relaxed print:text-ink">
-              {result.plainEnglishSummary}
-            </p>
+          <div className="relative flex flex-col-reverse sm:flex-row sm:items-start gap-6">
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-widest text-white/50 print:text-ink-soft">
+                Diagnostic Summary
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-white print:text-ink">
+                  {documentSummary.businessType ?? "Media Plan Review"}
+                </h1>
+                <span
+                  className={`text-xs font-semibold px-2.5 py-1 rounded-full shrink-0 backdrop-blur-sm ${overall.className}`}
+                >
+                  {overall.label}
+                </span>
+              </div>
+              <p className="mt-4 text-white/85 leading-relaxed print:text-ink">
+                {result.plainEnglishSummary}
+              </p>
 
-            <dl className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm border-t border-white/15 pt-5 print:border-line">
-              {documentSummary.reportingPeriod && (
-                <div>
-                  <dt className="text-white/50 print:text-ink-soft">Reporting period</dt>
-                  <dd className="font-medium text-white print:text-ink mt-0.5">
-                    {documentSummary.reportingPeriod}
-                  </dd>
-                </div>
-              )}
-              {documentSummary.totalSpend && (
-                <div>
-                  <dt className="text-white/50 print:text-ink-soft">Total spend</dt>
-                  <dd className="font-medium text-white print:text-ink mt-0.5">
-                    {documentSummary.totalSpend}
-                  </dd>
-                </div>
-              )}
-            </dl>
+              <dl className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm border-t border-white/15 pt-5 print:border-line">
+                {documentSummary.reportingPeriod && (
+                  <div>
+                    <dt className="text-white/50 print:text-ink-soft">Reporting period</dt>
+                    <dd className="font-medium text-white print:text-ink mt-0.5">
+                      {documentSummary.reportingPeriod}
+                    </dd>
+                  </div>
+                )}
+                {documentSummary.totalSpend && (
+                  <div>
+                    <dt className="text-white/50 print:text-ink-soft">Total spend</dt>
+                    <dd className="font-medium text-white print:text-ink mt-0.5">
+                      {documentSummary.totalSpend}
+                    </dd>
+                  </div>
+                )}
+              </dl>
+            </div>
+
+            <div className="shrink-0 self-center sm:self-start flex flex-col items-center">
+              <div
+                className={`flex h-20 w-20 sm:h-24 sm:w-24 items-center justify-center rounded-full font-serif text-4xl sm:text-5xl font-bold shadow-lg print:shadow-none print:border print:border-line ${GRADE_TONE_CLASS[health.tone]}`}
+              >
+                {health.grade}
+              </div>
+              <p className="mt-2 text-xs font-medium text-white/70 print:text-ink-soft">
+                Health score: {health.score}/100
+              </p>
+            </div>
           </div>
         </div>
       </Reveal>
 
+      <Reveal delay={40} className="mt-6">
+        <EmailDraft result={result} />
+      </Reveal>
+
+      {funnel && (
+        <Reveal delay={60} className="mt-6">
+          <div className="card-lift rounded-xl border border-line bg-paper-raised p-5 shadow-sm">
+            <SectionHeading eyebrow="Where the budget is going" title="Funnel coverage" />
+            <div className={hasDonut ? "grid grid-cols-1 lg:grid-cols-2 gap-6 items-start" : undefined}>
+              <FunnelBar breakdown={funnel} />
+              {hasDonut && <ChannelSpendDonut channelMix={documentSummary.channelMix} />}
+            </div>
+          </div>
+        </Reveal>
+      )}
+
       {documentSummary.channelMix.length > 0 && (
         <Reveal delay={80} className="mt-6">
+          <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2">
+            Full channel breakdown
+          </p>
           <div className="card-lift overflow-x-auto rounded-xl border border-line bg-paper-raised shadow-sm">
             <table className="w-full text-sm border-collapse">
               <thead>
