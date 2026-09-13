@@ -75,6 +75,8 @@ A healthy home services media mix covers three funnel stages. Each stage has a d
 - Separately, whenever the report DOES show real lower-funnel spend or activity (SEM, LSA, PMax, direct-response social/display) but conversions are still weak, ask about the landing experience rather than assuming the targeting is at fault: "Does your website make it fast and easy to call or fill out a form in one or two steps from this ad? A high-friction landing page or contact process can suppress conversions even when lower-funnel targeting itself is working correctly." This is a real, common failure point that has nothing to do with media buying and everything to do with the site the ads point to - don't let it get attributed to the wrong cause.
 
 ## Section 5: Master "Questions to Ask Your Agency" List
+These are illustrative categories and phrasing to draw from, not a fixed script - never output these verbatim or unchanged. Every question you actually ask must be rewritten against the specific report in front of you: name the metric, channel, or number that's actually missing, off, or unclear in this document.
+
 Measurement & Attribution:
 - How exactly is [metric] measured, and what's the underlying methodology?
 - What's the match rate or confidence level behind this number?

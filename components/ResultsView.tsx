@@ -5,6 +5,7 @@ import ChannelSpendDonut from "@/components/charts/ChannelSpendDonut";
 import FunnelBar from "@/components/charts/FunnelBar";
 import { computeHealthScore } from "@/lib/score";
 import { funnelBreakdown } from "@/lib/funnel";
+import { channelColorMap, colorForChannel } from "@/lib/channelColors";
 
 const GRADE_TONE_CLASS: Record<"good" | "caution" | "severe", string> = {
   good: "bg-good text-white",
@@ -97,6 +98,7 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
   const { documentSummary } = result;
   const health = computeHealthScore(result);
   const funnel = funnelBreakdown(result);
+  const kpiColorMap = channelColorMap(documentSummary.channelMix);
   const hasDonut =
     documentSummary.channelMix.filter((c) => c.spendNumeric != null && c.spendNumeric > 0).length >= 2;
 
@@ -214,17 +216,27 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
       {documentSummary.reportedKpis.length > 0 && (
         <Reveal delay={140} className="mt-4">
           <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 shadow-sm">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-3">
               Reported KPIs
             </h3>
-            <ul className="text-sm space-y-1">
-              {documentSummary.reportedKpis.map((k, i) => (
-                <li key={i} className="text-ink-soft">
-                  <span className="font-medium text-ink">{k.name}:</span> {k.value}
-                  {k.channel ? ` (${k.channel})` : ""}
-                </li>
-              ))}
-            </ul>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {documentSummary.reportedKpis.map((k, i) => {
+                const color = colorForChannel(kpiColorMap, k.channel);
+                return (
+                  <div
+                    key={i}
+                    className="rounded-lg bg-paper p-2.5"
+                    style={{ borderLeft: `3px solid ${color}` }}
+                  >
+                    <p className="text-[11px] uppercase tracking-wide text-ink-soft truncate">
+                      {k.name}
+                      {k.channel ? ` · ${k.channel}` : ""}
+                    </p>
+                    <p className="mt-0.5 text-sm font-semibold text-ink">{k.value}</p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </Reveal>
       )}
