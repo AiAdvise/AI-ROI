@@ -64,7 +64,7 @@ Not every gap is a red flag - some reflect genuine limitations of the inventory 
 | Programmatic DOOH | Proof-of-play logs, modeled or measured impressions | Foot-traffic lift methodology, control group description | Individual-level identity (inherently a shared/public medium) |
 
 ## Section 3: Home Services Benchmark Reference
-Use the table for the business's stated trade. If the trade is unstated or doesn't match Plumbing/Roofing/HVAC, fall back to the broadest range across all three rather than picking one trade's numbers arbitrarily, and note in the commentary that the benchmark is a general home-services approximation, not trade-specific.
+Use the table for the business's stated trade. If the trade is unstated or doesn't match Plumbing/Roofing/HVAC/Siding & Window Replacement, fall back to the broadest range across all four rather than picking one trade's numbers arbitrarily, and note in the commentary that the benchmark is a general home-services approximation, not trade-specific.
 
 ### Plumbing
 | Metric | Benchmark |
@@ -94,6 +94,16 @@ Use the table for the business's stated trade. If the trade is unstated or doesn
 | Search Click-to-Call Conversion Rate | 6.50%-12.00% (emergency repair terms range 10%-25%) - HVAC holds the highest overall conversion rate of any home trade, so a low number here is a stronger signal than it would be for another trade |
 | Search Cost Per Click (CPC) | $8.00-$15.00 standard average (spikes to $20-$32+ in peak heating/cooling seasons) |
 | CTV/OTT Completion Rate | 90.00%-97.00% |
+| Pre-Roll/OLV Completion Rate | 50.00%-70.00% |
+
+### Siding & Window Replacement
+| Metric | Benchmark |
+|---|---|
+| Search Cost Per Lead (CPL) | $150-$200+ (Google Search PPC); windows average ~$200, siding ~$160-$210 |
+| Search Click-Through Rate (CTR) | 3.50%-5.50% |
+| Search Click-to-Call Conversion Rate | 3.00%-6.00% (dedicated quote/estimate landing pages hit 6%-10%) |
+| Search Cost Per Click (CPC) | $8.00-$16.00 national average |
+| CTV/OTT Completion Rate | 90.00%-98.00% |
 | Pre-Roll/OLV Completion Rate | 50.00%-70.00% |
 
 Additional cross-trade figures:
