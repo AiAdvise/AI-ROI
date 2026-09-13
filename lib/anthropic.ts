@@ -100,7 +100,39 @@ export interface AnalyzeInput {
   spendNotes: string | null;
 }
 
+/**
+ * Thrown when the model call succeeded but produced output we can't use
+ * (cut off, no text, unparseable JSON, schema mismatch) - as opposed to a
+ * network/API-level failure, which the Anthropic SDK already retries on
+ * its own. These are usually one-off generation glitches, so the caller
+ * gets one extra attempt before giving up.
+ */
+class MalformedOutputError extends Error {
+  constructor(
+    message: string,
+    public readonly userMessage: string,
+  ) {
+    super(message);
+  }
+}
+
 export async function analyzeMediaPlan(input: AnalyzeInput): Promise<AnalysisResult> {
+  try {
+    return await runAnalysisAttempt(input);
+  } catch (err) {
+    if (!(err instanceof MalformedOutputError)) throw err;
+    console.warn("Analysis attempt produced malformed output, retrying once:", err.message);
+    try {
+      return await runAnalysisAttempt(input);
+    } catch (retryErr) {
+      if (!(retryErr instanceof MalformedOutputError)) throw retryErr;
+      console.error("Analysis failed twice:", retryErr.message);
+      throw new Error(retryErr.userMessage);
+    }
+  }
+}
+
+async function runAnalysisAttempt(input: AnalyzeInput): Promise<AnalysisResult> {
   const anthropic = getClient();
 
   const documentBlock: Anthropic.Messages.ContentBlockParam = input.isPdf
@@ -153,7 +185,8 @@ export async function analyzeMediaPlan(input: AnalyzeInput): Promise<AnalysisRes
   const response = await stream.finalMessage();
 
   if (response.stop_reason === "max_tokens") {
-    throw new Error(
+    throw new MalformedOutputError(
+      "stop_reason=max_tokens",
       "The analysis was too long and got cut off. Please try again - if it keeps happening " +
         "on this document, it may need to be split into a shorter report.",
     );
@@ -164,14 +197,30 @@ export async function analyzeMediaPlan(input: AnalyzeInput): Promise<AnalysisRes
   );
 
   if (!textBlock) {
-    throw new Error("Model returned no text content");
+    throw new MalformedOutputError(
+      "no text content in response",
+      "The analysis didn't return a result. Please try again.",
+    );
   }
 
-  const parsed = extractJson(textBlock.text);
+  let parsed: unknown;
+  try {
+    parsed = extractJson(textBlock.text);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "unknown error";
+    throw new MalformedOutputError(
+      `JSON extraction failed: ${message}`,
+      "The analysis didn't return a result. Please try again.",
+    );
+  }
+
   const result = AnalysisResultSchema.safeParse(parsed);
 
   if (!result.success) {
-    throw new Error(`Model output did not match expected schema: ${result.error.message}`);
+    throw new MalformedOutputError(
+      `schema mismatch: ${result.error.message}`,
+      "The analysis didn't return a result. Please try again.",
+    );
   }
 
   return result.data;
