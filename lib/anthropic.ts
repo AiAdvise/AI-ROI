@@ -117,18 +117,41 @@ class MalformedOutputError extends Error {
   }
 }
 
+// The API routes calling into this file set `maxDuration = 60` (or higher) -
+// the platform hard-kills the whole function at that point regardless of
+// what's still running, returning no JSON at all (a worse failure than a
+// clear error message). A first attempt that already took a while means a
+// second full model call is likely to blow through whatever's left of that
+// budget, so retrying is only safe when the first attempt was reasonably
+// fast - not a fixed guess, but cheap insurance against turning "one slow
+// request" into "one guaranteed timeout."
+const RETRY_ELAPSED_BUDGET_MS = 20_000;
+
 /**
- * Runs `attempt` and, if it fails with a MalformedOutputError, runs it again
- * once (a fresh API call) before giving up - shared by every extraction call
- * in this file, since a cut-off/unparseable/schema-mismatched response is
- * usually a one-off generation glitch rather than a systemic problem with
+ * Runs `attempt` and, if it fails with a MalformedOutputError AND the first
+ * attempt left enough of the platform's time budget for a second full model
+ * call, runs it again once before giving up - shared by every extraction
+ * call in this file, since a cut-off/unparseable/schema-mismatched response
+ * is usually a one-off generation glitch rather than a systemic problem with
  * the input. Any other error (a real API/auth failure) propagates immediately.
  */
 async function withMalformedOutputRetry<T>(attempt: () => Promise<T>): Promise<T> {
+  const startedAt = Date.now();
   try {
     return await attempt();
   } catch (err) {
     if (!(err instanceof MalformedOutputError)) throw err;
+
+    const elapsed = Date.now() - startedAt;
+    if (elapsed > RETRY_ELAPSED_BUDGET_MS) {
+      console.error(
+        `Attempt produced malformed output after ${elapsed}ms - skipping retry ` +
+          `(not enough time budget left before the platform's own timeout):`,
+        err.message,
+      );
+      throw new Error(err.userMessage);
+    }
+
     console.warn("Attempt produced malformed output, retrying once:", err.message);
     try {
       return await attempt();

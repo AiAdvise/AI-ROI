@@ -3,7 +3,12 @@ import { analyzeMediaPlan } from "@/lib/anthropic";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+// A vision-based PDF analysis against the full diagnostic framework can
+// occasionally run long; 60s was observed to be too tight for at least one
+// real upload (a platform timeout with no retry even in play). Vercel caps
+// this to whatever the project's plan actually allows, so raising it here is
+// safe even on a plan with a lower ceiling.
+export const maxDuration = 120;
 
 const ACCEPTED_TYPES: Record<string, { mediaType: string; isPdf: boolean }> = {
   "application/pdf": { mediaType: "application/pdf", isPdf: true },
