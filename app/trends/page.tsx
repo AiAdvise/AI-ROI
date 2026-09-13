@@ -24,6 +24,41 @@ import BrandMark from "@/components/BrandMark";
 import GradientBlobs from "@/components/GradientBlobs";
 import Reveal from "@/components/Reveal";
 
+/**
+ * Small inline delta badge next to a chart heading (e.g. "+18% since Jun
+ * 2026") - pass exactly one of `pct` or `points`. `goodDirection` decides
+ * which sign reads as green vs red: "up" for metrics where more is better
+ * (health score), "down" for metrics where less is better (cost per lead).
+ */
+function TrendDelta({
+  pct,
+  points,
+  sinceLabel,
+  goodDirection,
+}: {
+  pct?: number | null;
+  points?: number;
+  sinceLabel: string;
+  goodDirection: "up" | "down";
+}) {
+  const value = pct ?? points ?? null;
+  if (value == null) return null;
+
+  const rounded = Math.round(value);
+  if (rounded === 0) {
+    return <span className="text-xs font-medium text-ink-soft">No change since {sinceLabel}</span>;
+  }
+
+  const isIncrease = rounded > 0;
+  const isGood = goodDirection === "up" ? isIncrease : !isIncrease;
+  const suffix = pct != null ? "%" : " pts";
+  const text = `${isIncrease ? "+" : ""}${rounded}${suffix} since ${sinceLabel}`;
+
+  return (
+    <span className={`text-xs font-medium ${isGood ? "text-good" : "text-severe"}`}>{text}</span>
+  );
+}
+
 const OVERALL_LABEL: Record<string, string> = {
   looks_reasonable: "Looks reasonable",
   some_concerns: "Some concerns",
@@ -156,8 +191,16 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
     };
   });
 
-  const impressionsPoints = kpiTotalSeries(windowReports, "Impressions");
-  const clicksPoints = kpiTotalSeries(windowReports, "Clicks");
+  // formatValue on the chart abbreviates large numbers ("237k") for axis
+  // labels - the hover tooltip shows the exact reported count instead.
+  const impressionsPoints = kpiTotalSeries(windowReports, "Impressions").map((p) => ({
+    ...p,
+    tooltip: `${p.label}: ${p.value.toLocaleString()} impressions`,
+  }));
+  const clicksPoints = kpiTotalSeries(windowReports, "Clicks").map((p) => ({
+    ...p,
+    tooltip: `${p.label}: ${p.value.toLocaleString()} clicks`,
+  }));
   const cplPoints = costPerLeadSeries(windowReports);
 
   const spendDeltaPct = percentChange(
@@ -274,7 +317,8 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
 
       {spendPoints.length >= 2 && (
         <Reveal className="mb-10">
-          <h2 className="font-serif text-lg font-semibold text-ink mb-3">Total spend over time</h2>
+          <h2 className="font-serif text-lg font-semibold text-ink mb-1">Total spend over time</h2>
+          <p className="text-xs text-ink-soft/70 mb-3">Total reported ad spend for each period.</p>
           <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
             <SpendTrendChart points={spendPoints} />
           </div>
@@ -283,8 +327,15 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
 
       {cplPoints.length >= 2 && (
         <Reveal className="mb-10">
-          <h2 className="font-serif text-lg font-semibold text-ink mb-3">Cost per lead over time</h2>
-          <p className="text-xs text-ink-soft/70 -mt-1.5 mb-3">
+          <div className="flex flex-wrap items-baseline gap-x-2 mb-1">
+            <h2 className="font-serif text-lg font-semibold text-ink">Cost per lead over time</h2>
+            <TrendDelta
+              pct={percentChange(cplPoints[0].value, cplPoints[cplPoints.length - 1].value)}
+              sinceLabel={cplPoints[0].label}
+              goodDirection="down"
+            />
+          </div>
+          <p className="text-xs text-ink-soft/70 mb-3">
             Total spend divided by calls + form fills - lower is better.
           </p>
           <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
@@ -295,12 +346,25 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
 
       {healthPoints.length >= 2 && (
         <Reveal className="mb-10">
-          <h2 className="font-serif text-lg font-semibold text-ink mb-3">Health score over time</h2>
+          <div className="flex flex-wrap items-baseline gap-x-2 mb-1">
+            <h2 className="font-serif text-lg font-semibold text-ink">Health score over time</h2>
+            <TrendDelta
+              pct={null}
+              points={healthPoints[healthPoints.length - 1].value - healthPoints[0].value}
+              sinceLabel={healthPoints[0].label}
+              goodDirection="up"
+            />
+          </div>
+          <p className="text-xs text-ink-soft/70 mb-3">
+            0-100, deducted from each report&apos;s own red flags (high -22, medium -10, low -4
+            points) - the same score shown at the top of each individual report. A quick trend
+            signal, not a replacement for reading the findings themselves.
+          </p>
           <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
             <MetricBarChart
               points={healthPoints}
               color={TONE_HEX.good}
-              formatValue={(v) => String(Math.round(v))}
+              format="integer"
               ariaLabel="Health score over time"
               width={640}
             />
@@ -309,9 +373,12 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
       )}
 
       <Reveal className="mb-10">
-        <h2 className="font-serif text-lg font-semibold text-ink mb-3">
+        <h2 className="font-serif text-lg font-semibold text-ink mb-1">
           Overall assessment over time
         </h2>
+        <p className="text-xs text-ink-soft/70 mb-3">
+          The AI&apos;s overall read on each report, independent of the health score above.
+        </p>
         <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
           <AssessmentTimeline points={assessmentPoints} />
         </div>
@@ -319,7 +386,11 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
 
       {(impressionsPoints.length >= 2 || clicksPoints.length >= 2) && (
         <Reveal className="mb-10">
-          <h2 className="font-serif text-lg font-semibold text-ink mb-3">Reach &amp; clicks over time</h2>
+          <h2 className="font-serif text-lg font-semibold text-ink mb-1">Reach &amp; clicks over time</h2>
+          <p className="text-xs text-ink-soft/70 mb-3">
+            How many people saw (impressions) and engaged with (clicks) your ads, totaled across
+            all channels each period. Hover a bar for the exact number.
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {impressionsPoints.length >= 2 && (
               <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
@@ -329,7 +400,7 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
                 <MetricBarChart
                   points={impressionsPoints}
                   color="#1f5f9e"
-                  formatValue={(v) => (v >= 1000 ? `${Math.round(v / 1000)}k` : String(Math.round(v)))}
+                  format="compact"
                   ariaLabel="Impressions over time"
                 />
               </div>
@@ -342,7 +413,7 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
                 <MetricBarChart
                   points={clicksPoints}
                   color="#a0266b"
-                  formatValue={(v) => String(Math.round(v))}
+                  format="integer"
                   ariaLabel="Clicks over time"
                 />
               </div>
@@ -353,7 +424,10 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
 
       {channelSeries.length > 0 && (
         <Reveal className="mb-10">
-          <h2 className="font-serif text-lg font-semibold text-ink mb-3">Channel spend over time</h2>
+          <h2 className="font-serif text-lg font-semibold text-ink mb-1">Channel spend over time</h2>
+          <p className="text-xs text-ink-soft/70 mb-3">
+            How your budget has been split across channels each period.
+          </p>
           <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
             <ChannelTrendChart series={channelSeries} />
           </div>

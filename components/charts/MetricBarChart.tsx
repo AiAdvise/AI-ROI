@@ -1,3 +1,7 @@
+"use client";
+
+import { useState } from "react";
+
 export interface BarPoint {
   label: string;
   value: number;
@@ -7,7 +11,7 @@ export interface BarPoint {
 
 const PAD_LEFT = 44;
 const PAD_RIGHT = 8;
-const PAD_TOP = 20;
+const PAD_TOP = 28;
 const PAD_BOTTOM = 28;
 const BAR_GAP = 6;
 
@@ -20,17 +24,26 @@ function niceCeil(n: number): number {
   return niceFrac * base;
 }
 
+// A serializable format name rather than a formatter function - this
+// component is a Client Component (it needs hover state), and the page
+// rendering it is a Server Component, which can't pass a function prop
+// across that boundary.
+function formatByType(v: number, format: "compact" | "integer"): string {
+  if (format === "compact" && v >= 1000) return `${Math.round(v / 1000)}k`;
+  return String(Math.round(v));
+}
+
 export default function MetricBarChart({
   points,
   color,
-  formatValue,
+  format,
   ariaLabel,
   width = 320,
   height = 200,
 }: {
   points: BarPoint[];
   color: string;
-  formatValue: (v: number) => string;
+  format: "compact" | "integer";
   ariaLabel: string;
   /** SVG viewBox dimensions - only their ratio matters (the chart always
    * renders at the container's width). Defaults suit a half-width card;
@@ -38,6 +51,8 @@ export default function MetricBarChart({
   width?: number;
   height?: number;
 }) {
+  const [hovered, setHovered] = useState<number | null>(null);
+
   if (points.length < 2) return null;
 
   const WIDTH = width;
@@ -60,7 +75,7 @@ export default function MetricBarChart({
         const y = PAD_TOP + plotH - g * plotH;
         return (
           <text key={g} x={PAD_LEFT - 6} y={y + 3} textAnchor="end" fontSize={9} fill="#3d465a">
-            {formatValue(maxValue * g)}
+            {formatByType(maxValue * g, format)}
           </text>
         );
       })}
@@ -69,11 +84,45 @@ export default function MetricBarChart({
         const x = PAD_LEFT + i * (barW + BAR_GAP);
         const h = Math.max((p.value / maxValue) * plotH, 2);
         const y = PAD_TOP + plotH - h;
+        const isHovered = hovered === i;
+        // Anchor the hover label to whichever edge of the bar keeps it
+        // inside the chart, rather than always centering (which clips off
+        // the right edge for the last bar with a long label).
+        const labelAnchor = i === 0 ? "start" : i === points.length - 1 ? "end" : "middle";
+        const labelX = labelAnchor === "start" ? x : labelAnchor === "end" ? x + barW : x + barW / 2;
         return (
-          <g key={i}>
-            <rect x={x} y={y} width={barW} height={h} rx={3} fill={p.color ?? color}>
-              <title>{p.tooltip ?? `${p.label}: ${formatValue(p.value)}`}</title>
-            </rect>
+          <g
+            key={i}
+            className="cursor-pointer"
+            onMouseEnter={() => setHovered(i)}
+            onMouseLeave={() => setHovered((cur) => (cur === i ? null : cur))}
+            onTouchStart={() => setHovered(i)}
+          >
+            {/* Wider invisible hit area so the bar is easy to hover/tap even when short. */}
+            <rect x={x} y={PAD_TOP} width={barW} height={plotH} fill="transparent" />
+            <rect
+              x={x}
+              y={y}
+              width={barW}
+              height={h}
+              rx={3}
+              fill={p.color ?? color}
+              opacity={hovered === null || isHovered ? 1 : 0.55}
+              stroke={isHovered ? "#1c2434" : "none"}
+              strokeWidth={isHovered ? 1.5 : 0}
+            />
+            {isHovered && (
+              <text
+                x={labelX}
+                y={Math.max(y - 8, 11)}
+                textAnchor={labelAnchor}
+                fontSize={11}
+                fontWeight={700}
+                fill="#1c2434"
+              >
+                {p.tooltip ?? formatByType(p.value, format)}
+              </text>
+            )}
             <text x={x + barW / 2} y={HEIGHT - 8} textAnchor="middle" fontSize={9} fill="#3d465a">
               {p.label}
             </text>

@@ -129,9 +129,25 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
                   {overall.label}
                 </span>
               </div>
-              <p className="mt-4 text-white/85 leading-relaxed print:text-ink">
-                {result.plainEnglishSummary}
-              </p>
+              {result.keyTakeaways.length > 0 ? (
+                <div className="mt-4">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-white/50 print:text-ink-soft mb-2">
+                    Key Takeaways
+                  </p>
+                  <ul className="space-y-1.5">
+                    {result.keyTakeaways.map((t, i) => (
+                      <li key={i} className="flex gap-2 text-sm text-white/90 leading-relaxed print:text-ink">
+                        <span className="text-white/40 print:text-accent mt-0.5 shrink-0">&bull;</span>
+                        <span>{t}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="mt-4 text-white/85 leading-relaxed print:text-ink">
+                  {result.plainEnglishSummary}
+                </p>
+              )}
 
               <dl className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm border-t border-white/15 pt-5 print:border-line">
                 {documentSummary.reportingPeriod && (
@@ -344,6 +360,28 @@ export default function ResultsView({ result }: { result: AnalysisResult }) {
           </div>
         )}
       </div>
+
+      {result.actionItems.length > 0 && (
+        <div className="mt-12">
+          <Reveal>
+            <SectionHeading eyebrow="Things you can check yourself" title="Action items" />
+          </Reveal>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 print:grid-cols-1">
+            {result.actionItems.map((a, i) => (
+              <Reveal key={i} delay={Math.min(i, 6) * 70}>
+                <div className="card-lift rounded-lg border border-brand-a/30 bg-brand-a/10 p-4 shadow-sm print:bg-white print:border-line">
+                  <h3 className="font-medium text-ink">{a.title}</h3>
+                  <p className="text-sm text-ink mt-2 leading-relaxed font-medium">{a.action}</p>
+                  <p className="text-sm text-ink-soft mt-1.5 leading-relaxed">{a.reasoning}</p>
+                  {a.relatedChannel && (
+                    <p className="text-xs mt-2 text-ink-soft/70">Channel: {a.relatedChannel}</p>
+                  )}
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      )}
 
       <Reveal className="mt-12 mb-4">
         <div className="relative overflow-hidden rounded-2xl border border-accent/20 bg-accent-soft p-6 sm:p-8 shadow-sm print:border-line print:bg-white print:shadow-none">

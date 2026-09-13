@@ -20,7 +20,8 @@ For each metric or claim in a client's report, evaluate three things:
 - Why it's weak on its own: CTV ads are typically non-skippable, so 90%+ completion is the default outcome regardless of creative quality or targeting. A high number here reflects the ad format, not campaign effectiveness - it is the expected result, not an impressive one.
 - Not a red flag on its own: for many CTV/programmatic buys, completion rate is genuinely the only metric the platform provides (see Section 2's completeness checklist) - an agency simply listing it as a line item, with no other channels or metrics available for that placement, is reporting what it has, not spinning. Never flag a report as a red flag merely because completion rate is present, is high, or is the only CTV metric shown.
 - Red flag - only when the report's own language actively frames VTR as evidence the campaign is working (e.g. calling it out as a "win," using it to justify the spend or a renewal, or headlining it in a results/summary section) while omitting a metric that actually exists elsewhere for that same channel. The red flag is the misrepresentation, never the metric's mere presence.
-- Ask (default to this instead of a red flag whenever VTR is simply the only CTV metric available, which is the common case): "Beyond completion rate, what evidence do we have that this reached the right audience and drove a business outcome?"
+- The exception in the other direction: a completion rate meaningfully below the healthy range in Section 3 (CTV/OTT under ~90%, Pre-Roll/OLV under ~50%) IS diagnostic on its own, unlike a high one - it points to creative/targeting mismatch or an unexpectedly skippable placement, and is worth a red flag or benchmark comparison even without any spin in the report's language.
+- Ask (default to this instead of a red flag whenever VTR is simply the only CTV metric available and within the healthy range, which is the common case): "Beyond completion rate, what evidence do we have that this reached the right audience and drove a business outcome?"
 
 ### Household Visits / IP-Based Post-View Attribution
 - What it measures: a site visit matched back to a household believed to have seen a CTV ad, typically via IP-to-impression matching.
@@ -55,12 +56,48 @@ Not every gap is a red flag - some reflect genuine limitations of the inventory 
 | Traditional broadcast/cable insertion order | As-run log (exact air times/dates), gross rating points | Nothing - genuinely limited channel by design | Any individual-level digital attribution |
 | Programmatic DOOH | Proof-of-play logs, modeled or measured impressions | Foot-traffic lift methodology, control group description | Individual-level identity (inherently a shared/public medium) |
 
-## Section 3: Home Services Benchmark Reference (directional - expand from real pilot data)
-- HVAC search ad CPL: ~$45; Plumbing: ~$52; Roofing: ~$79 (LocaliQ 2025 benchmark)
-- Home & Home Improvement average CPL across platforms: ~$91
-- Healthy HVAC ROAS: 4x+ (median ~4.37x); below ~2.77x is bottom-quartile
-- Average home services ticket size: $9,500-$18,000 (varies by trade)
-- Note: these benchmarks are almost entirely search/PPC-derived. No equivalent public benchmark culture exists yet for CTV/DOOH/streaming spend in this vertical. When a report's numbers fall outside these ranges, or when the buy is CTV/DOOH/programmatic (where no public benchmark exists), say so explicitly rather than forcing a comparison - flag it as a directional judgment call, not a hard benchmark violation.
+## Section 3: Home Services Benchmark Reference
+Use the table for the business's stated trade. If the trade is unstated or doesn't match Plumbing/Roofing/HVAC, fall back to the broadest range across all three rather than picking one trade's numbers arbitrarily, and note in the commentary that the benchmark is a general home-services approximation, not trade-specific.
+
+### Plumbing
+| Metric | Benchmark |
+|---|---|
+| Search Cost Per Lead (CPL) | $120-$170+ (non-branded PPC); LSA averages $45-$85 |
+| Search Click-Through Rate (CTR) | 4.97%-5.50% |
+| Search Click-to-Call Conversion Rate | 7.63%-15.00% |
+| Search Cost Per Click (CPC) | ~$10.49 national average (spikes for emergency/water-heater terms) |
+| CTV/OTT Completion Rate | 90.00%-97.00% |
+| Pre-Roll/OLV Completion Rate | 50.00%-70.00% |
+
+### Roofing
+| Metric | Benchmark |
+|---|---|
+| Search Cost Per Lead (CPL) | $100-$228 (Google Search PPC); LSA averages $75-$150 |
+| Search Click-Through Rate (CTR) | 3.00%-5.00% |
+| Search Click-to-Call Conversion Rate | 3.70%-11.00% (dedicated landing pages hit 8%-15%) |
+| Search Cost Per Click (CPC) | $6.00-$15.00 national average (storm/emergency terms can hit $25-$35+) |
+| CTV/OTT Completion Rate | 90.00%-98.00% |
+| Pre-Roll/OLV Completion Rate | 50.00%-70.00% |
+
+### HVAC
+| Metric | Benchmark |
+|---|---|
+| Search Cost Per Lead (CPL) | $45-$149 (Search PPC); LSA averages $42-$55 |
+| Search Click-Through Rate (CTR) | 3.00%-6.00% (up to 6.5%-12% for emergency AC repair terms) |
+| Search Click-to-Call Conversion Rate | 6.50%-12.00% (emergency repair terms range 10%-25%) - HVAC holds the highest overall conversion rate of any home trade, so a low number here is a stronger signal than it would be for another trade |
+| Search Cost Per Click (CPC) | $8.00-$15.00 standard average (spikes to $20-$32+ in peak heating/cooling seasons) |
+| CTV/OTT Completion Rate | 90.00%-97.00% |
+| Pre-Roll/OLV Completion Rate | 50.00%-70.00% |
+
+Additional cross-trade figures:
+- Average home services ticket size: $9,500-$18,000 (varies by trade).
+- Healthy HVAC ROAS: 4x+ (median ~4.37x); below ~2.77x is bottom-quartile.
+
+**How to use the click-to-call conversion rate:** this is the rate of search clicks that actually become a phone call - a genuinely powerful diagnostic most reports never surface on their own, because it isolates the landing-page/call-routing step from the ad-targeting step. A CTR at or above benchmark combined with a click-to-call rate well below benchmark (e.g. reported data showing 10%+ CTR against a 4-6% benchmark, but under 2% click-to-call against a 7-15% benchmark) is a strong, specific signal: the ads are earning clicks fine, but something between the click and the phone ringing is broken - almost always the landing page, the click-to-call setup, or a landing page that doesn't match the ad's promise. Flag this pattern by name when you see it, and always pair it with the landing-page friction question from Section 4.
+
+**How to use the completion-rate ranges:** Section 1 already covers why a high completion rate is the expected outcome for non-skippable CTV, not proof of a strong campaign - these ranges add the other direction. A completion rate meaningfully BELOW its benchmark (especially Pre-Roll/OLV under ~50%) is a real signal worth flagging: high skip/drop-off, a creative or targeting mismatch, or a skippable placement running where non-skippable was expected - unlike a high completion rate, a genuinely low one is diagnostic on its own, not something that needs to be "spun" to become a concern.
+
+**Coverage caveat:** these ranges cover Search (SEM/LSA) efficiency and video completion rates. No comparable public benchmark culture exists yet for CTV/DOOH/streaming spend levels themselves (cost per impression, etc.) or for Performance Max as its own line item - when a report's numbers fall outside a covered range, say so explicitly; when the metric or buy type isn't covered here at all, say that too rather than forcing a comparison that doesn't exist.
 
 ## Section 4: Full-Funnel Coverage Model (Home Services)
 A healthy home services media mix covers three funnel stages. Each stage has a different job and should be judged by different metrics - judging an upper-funnel tactic by lower-funnel metrics (or vice versa) is itself a common analysis mistake.
