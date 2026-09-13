@@ -112,3 +112,21 @@ export const AnalysisResultSchema = z.object({
 });
 
 export type AnalysisResult = z.infer<typeof AnalysisResultSchema>;
+
+// A much lighter extraction than AnalysisResultSchema - a CRM/sales export
+// has no channel mix, benchmarks, or red flags to reason about. This exists
+// purely to plot revenue and deal volume over time, the same way a
+// month-over-month ad report gets plotted on Trends.
+export const SalesDataResultSchema = z.object({
+  reportingPeriod: nullableString,
+  reportingPeriodStart: nullableDateString,
+  totalRevenue: nullableString,
+  totalRevenueNumeric: nullableNumber,
+  dealCount: nullableString,
+  dealCountNumeric: nullableNumber,
+  avgDealSize: nullableString,
+  avgDealSizeNumeric: nullableNumber,
+  notes: nullableString,
+});
+
+export type SalesDataResult = z.infer<typeof SalesDataResultSchema>;
