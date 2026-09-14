@@ -53,7 +53,7 @@ export default function SalesUploadForm({
 
   return (
     <div
-      className={`w-full rounded-2xl border border-line bg-paper-raised p-6 sm:p-8 shadow-[0_1px_2px_rgba(28,36,52,0.04),0_8px_24px_rgba(28,36,52,0.05)] ${disabled ? "opacity-60 pointer-events-none" : ""}`}
+      className={`w-full rounded-2xl border border-line bg-paper-raised p-5 sm:p-6 shadow-[0_1px_2px_rgba(28,36,52,0.04),0_8px_24px_rgba(28,36,52,0.05)] ${disabled ? "opacity-60 pointer-events-none" : ""}`}
     >
       <div
         onDragOver={(e) => {
@@ -63,7 +63,7 @@ export default function SalesUploadForm({
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
-        className={`cursor-pointer rounded-xl border-2 border-dashed p-10 text-center transition-colors ${
+        className={`cursor-pointer rounded-xl border-2 border-dashed p-5 text-center transition-colors ${
           isDragging ? "border-accent bg-accent-soft" : "border-line bg-paper hover:border-ink-soft/40"
         }`}
       >

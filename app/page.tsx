@@ -8,6 +8,7 @@ import SalesUploadForm from "@/components/SalesUploadForm";
 import ResultsView from "@/components/ResultsView";
 import SalesResultsView from "@/components/SalesResultsView";
 import ReportActions from "@/components/ReportActions";
+import ReportPreviewMockup from "@/components/ReportPreviewMockup";
 import BrandMark from "@/components/BrandMark";
 import GradientBlobs from "@/components/GradientBlobs";
 import Reveal from "@/components/Reveal";
@@ -190,24 +191,22 @@ export default function Home() {
 
         {status !== "done" && (
           <form onSubmit={handleSubmit} className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
               <Reveal>
-                <div className="text-center lg:text-left">
-                  <h1 className="gradient-text font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-balance">
-                    Your monthly marketing &amp; sales check-in
-                  </h1>
-                  <p className="mt-4 text-ink-soft leading-relaxed">
-                    Upload this month&apos;s agency report, your sales/CRM export, or both
-                    together. We&apos;ll diagnose the ad report against a real media-buying
-                    framework, track your sales over time, and - when you upload both - show you
-                    whether the spend is actually turning into business.
-                  </p>
-                </div>
-              </Reveal>
-
-              <Reveal delay={120}>
                 <div>
-                  <div className="space-y-5">
+                  <div className="text-center lg:text-left">
+                    <h1 className="gradient-text font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-balance">
+                      Your monthly marketing &amp; sales check-in
+                    </h1>
+                    <p className="mt-4 text-ink-soft leading-relaxed">
+                      Upload this month&apos;s agency report, your sales/CRM export, or both
+                      together. We&apos;ll diagnose the ad report against a real media-buying
+                      framework, track your sales over time, and - when you upload both - show you
+                      whether the spend is actually turning into business.
+                    </p>
+                  </div>
+
+                  <div className="mt-8 space-y-4">
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2">
                         Agency / Media Report
@@ -250,6 +249,10 @@ export default function Home() {
                     {status === "analyzing" ? "Processing..." : "Upload this month's data"}
                   </button>
                 </div>
+              </Reveal>
+
+              <Reveal delay={160} className="hidden lg:block">
+                <ReportPreviewMockup />
               </Reveal>
             </div>
           </form>
