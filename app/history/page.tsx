@@ -69,38 +69,40 @@ export default async function HistoryPage() {
         </div>
       </header>
 
-      <main className="relative max-w-4xl mx-auto px-4 py-12">
+      <main className="relative px-4 py-12">
         <GradientBlobs />
-        <h1 className="gradient-text font-serif text-3xl font-semibold tracking-tight mb-6">
-          Report history
-        </h1>
+        <div className="relative max-w-4xl mx-auto">
+          <h1 className="gradient-text font-serif text-3xl font-semibold tracking-tight mb-6">
+            Report history
+          </h1>
 
-        {error && (
-          <p className="text-sm text-severe">Couldn&apos;t load your report history.</p>
-        )}
+          {error && (
+            <p className="text-sm text-severe">Couldn&apos;t load your report history.</p>
+          )}
 
-        {!error && (!reports || reports.length === 0) && (
-          <p className="text-sm text-ink-soft">
-            You haven&apos;t run any diagnostics yet.{" "}
-            <Link href="/" className="underline underline-offset-4 hover:text-ink">
-              Run your first one.
-            </Link>
-          </p>
-        )}
+          {!error && (!reports || reports.length === 0) && (
+            <p className="text-sm text-ink-soft">
+              You haven&apos;t run any diagnostics yet.{" "}
+              <Link href="/" className="underline underline-offset-4 hover:text-ink">
+                Run your first one.
+              </Link>
+            </p>
+          )}
 
-        {reports && reports.length > 0 && <HistoryList reports={reports} />}
+          {reports && reports.length > 0 && <HistoryList reports={reports} />}
 
-        {salesReports && salesReports.length > 0 && (
-          <div className="mt-12">
-            <h2 className="gradient-text font-serif text-2xl font-semibold tracking-tight mb-4">
-              Sales history
-            </h2>
-            {salesError && (
-              <p className="text-sm text-severe">Couldn&apos;t load your sales history.</p>
-            )}
-            {!salesError && <SalesHistoryList reports={salesReports} />}
-          </div>
-        )}
+          {salesReports && salesReports.length > 0 && (
+            <div className="mt-12">
+              <h2 className="gradient-text font-serif text-2xl font-semibold tracking-tight mb-4">
+                Sales history
+              </h2>
+              {salesError && (
+                <p className="text-sm text-severe">Couldn&apos;t load your sales history.</p>
+              )}
+              {!salesError && <SalesHistoryList reports={salesReports} />}
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );

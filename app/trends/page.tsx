@@ -144,41 +144,43 @@ export default async function TrendsPage() {
         </div>
       </header>
 
-      <main className="relative max-w-5xl mx-auto px-4 py-12">
+      <main className="relative px-4 py-12">
         <GradientBlobs />
-        <h1 className="gradient-text font-serif text-3xl font-semibold tracking-tight mb-2">
-          Trends
-        </h1>
+        <div className="relative max-w-5xl mx-auto">
+          <h1 className="gradient-text font-serif text-3xl font-semibold tracking-tight mb-2">
+            Trends
+          </h1>
 
-        {reports.length < 2 && salesReports.length < 2 ? (
-          <p className="text-sm text-ink-soft">
-            {parsedReports.length < 2 && parsedSales.length < 2
-              ? "Run at least two diagnostics, or upload at least two sales snapshots, to see trends over time."
-              : "None of your saved reports have a clear reporting period stated in the document, so there's nothing to plot on a timeline yet."}{" "}
-            <Link href="/" className="underline underline-offset-4 hover:text-ink">
-              Run one now.
-            </Link>
-            {(parsedReports.length >= 2 || parsedSales.length >= 2) && (
-              <>
-                {" · "}
-                <Link href="/history" className="underline underline-offset-4 hover:text-ink">
-                  View your reports
-                </Link>
-              </>
-            )}
-          </p>
-        ) : (
-          <>
-            {reports.length >= 2 && <TrendsBody reports={reports} undatedCount={undatedCount} />}
-            {salesReports.length >= 2 && (
-              <SalesTrendsSection
-                sales={salesReports}
-                adReports={reports}
-                className={reports.length >= 2 ? "mt-14" : undefined}
-              />
-            )}
-          </>
-        )}
+          {reports.length < 2 && salesReports.length < 2 ? (
+            <p className="text-sm text-ink-soft">
+              {parsedReports.length < 2 && parsedSales.length < 2
+                ? "Run at least two diagnostics, or upload at least two sales snapshots, to see trends over time."
+                : "None of your saved reports have a clear reporting period stated in the document, so there's nothing to plot on a timeline yet."}{" "}
+              <Link href="/" className="underline underline-offset-4 hover:text-ink">
+                Run one now.
+              </Link>
+              {(parsedReports.length >= 2 || parsedSales.length >= 2) && (
+                <>
+                  {" · "}
+                  <Link href="/history" className="underline underline-offset-4 hover:text-ink">
+                    View your reports
+                  </Link>
+                </>
+              )}
+            </p>
+          ) : (
+            <>
+              {reports.length >= 2 && <TrendsBody reports={reports} undatedCount={undatedCount} />}
+              {salesReports.length >= 2 && (
+                <SalesTrendsSection
+                  sales={salesReports}
+                  adReports={reports}
+                  className={reports.length >= 2 ? "mt-14" : undefined}
+                />
+              )}
+            </>
+          )}
+        </div>
       </main>
     </div>
   );
