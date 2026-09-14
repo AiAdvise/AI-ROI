@@ -120,6 +120,17 @@ export default function SalesTrendsSection({
         </Reveal>
       </div>
 
+      {deltaSentence && (
+        <Reveal className="mb-10">
+          <div className="rounded-xl border border-good/20 bg-good-soft p-5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-good mb-1">
+              New business this month
+            </p>
+            <p className="text-sm text-ink leading-relaxed">{deltaSentence}</p>
+          </div>
+        </Reveal>
+      )}
+
       {revPoints.length >= 2 && (
         <Reveal className="mb-10">
           <h3 className="font-serif text-lg font-semibold text-ink mb-1">Revenue over time</h3>
@@ -140,14 +151,6 @@ export default function SalesTrendsSection({
             revenue are usually very different magnitudes, and these two charts may not cover
             exactly the same periods.
           </p>
-          {deltaSentence && (
-            <div className="mb-4 rounded-xl border border-good/20 bg-good-soft p-4">
-              <p className="text-xs font-semibold uppercase tracking-widest text-good mb-1">
-                New business this month
-              </p>
-              <p className="text-sm text-ink leading-relaxed">{deltaSentence}</p>
-            </div>
-          )}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
               <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2">
