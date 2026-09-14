@@ -52,6 +52,16 @@ export default function SpendTrendChart({
     })
     .join(" ");
 
+  // Filled area under the line, fading to transparent at the baseline - a
+  // bare line on an otherwise-empty card reads as thin/cheap, especially
+  // when the data sits well below the chart's max. Derived from ariaLabel
+  // (already distinct per usage on this page) rather than a hook, since
+  // this component has no "use client" and may render server-side.
+  const gradientId = `spend-trend-${ariaLabel.replace(/[^a-zA-Z0-9]/g, "-").toLowerCase()}`;
+  const baselineY = PAD_TOP + plotH;
+  const firstPos = xy(0, points[0].value);
+  const areaPath = `${linePath} L${(PAD_LEFT + (points.length - 1) * stepX).toFixed(1)},${baselineY.toFixed(1)} L${firstPos.x.toFixed(1)},${baselineY.toFixed(1)} Z`;
+
   const gridLines = [0, 0.25, 0.5, 0.75, 1];
   const last = points[points.length - 1];
   const lastPos = xy(points.length - 1, last.value);
@@ -61,6 +71,12 @@ export default function SpendTrendChart({
 
   return (
     <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="w-full h-auto" role="img" aria-label={ariaLabel}>
+      <defs>
+        <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity={0.32} />
+          <stop offset="100%" stopColor={color} stopOpacity={0} />
+        </linearGradient>
+      </defs>
       {gridLines.map((g) => {
         const y = PAD_TOP + plotH - g * plotH;
         return (
@@ -84,6 +100,7 @@ export default function SpendTrendChart({
         );
       })}
 
+      <path d={areaPath} fill={`url(#${gradientId})`} stroke="none" />
       <path d={linePath} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
 
       {points.map((p, i) => {
