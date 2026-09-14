@@ -14,22 +14,30 @@ import Reveal from "@/components/Reveal";
 import { createClient } from "@/lib/supabase/client";
 import type { AnalysisResult, SalesDataResult } from "@/lib/types";
 
-type Status = "idle" | "analyzing" | "error" | "done";
-type UploadKind = "agency" | "sales";
+type Status = "idle" | "analyzing" | "done";
 
-const UPLOAD_KINDS: { value: UploadKind; label: string }[] = [
-  { value: "agency", label: "Agency / Media Report" },
-  { value: "sales", label: "Sales Data (CRM)" },
-];
+const GENERIC_TIMEOUT_MESSAGE =
+  "The server took too long or hit an unexpected error. Please try again - if it keeps " +
+  "happening, try a smaller or simpler file.";
 
 export default function Home() {
   const router = useRouter();
-  const [uploadKind, setUploadKind] = useState<UploadKind>("agency");
   const [status, setStatus] = useState<Status>("idle");
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [salesResult, setSalesResult] = useState<SalesDataResult | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  const [agencyFile, setAgencyFile] = useState<File | null>(null);
+  const [trade, setTrade] = useState<string>("");
+  const [spendNotes, setSpendNotes] = useState<string>("");
+  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [resultId, setResultId] = useState<string | null>(null);
+  const [agencyError, setAgencyError] = useState<string | null>(null);
+
+  const [salesFile, setSalesFile] = useState<File | null>(null);
+  const [salesNotes, setSalesNotes] = useState<string>("");
+  const [salesResult, setSalesResult] = useState<SalesDataResult | null>(null);
+  const [salesResultId, setSalesResultId] = useState<string | null>(null);
+  const [salesError, setSalesError] = useState<string | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -45,100 +53,96 @@ export default function Home() {
     router.refresh();
   }
 
-  async function handleSubmit(file: File, trade: string | null, spendNotes: string | null) {
-    setStatus("analyzing");
-    setError(null);
-    setResult(null);
-
+  async function uploadAgencyReport() {
+    if (!agencyFile) return;
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", agencyFile);
       if (trade) formData.append("trade", trade);
       if (spendNotes) formData.append("spendNotes", spendNotes);
 
-      const res = await fetch("/api/analyze", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch("/api/analyze", { method: "POST", body: formData });
 
       if (!res.headers.get("content-type")?.includes("application/json")) {
-        throw new Error(
-          "The server took too long or hit an unexpected error. Please try again - if it " +
-            "keeps happening, try a smaller or simpler file.",
-        );
+        throw new Error(GENERIC_TIMEOUT_MESSAGE);
       }
 
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.error ?? "Something went wrong analyzing your report.");
       }
 
-      if (data.reportId) {
-        router.push(`/reports/${data.reportId}`);
-        return;
-      }
-
       setResult(data.result as AnalysisResult);
-      setStatus("done");
+      setResultId(data.reportId ?? null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-      setStatus("error");
+      setAgencyError(err instanceof Error ? err.message : "Something went wrong.");
     }
   }
 
-  async function handleSalesSubmit(file: File, notes: string | null) {
-    setStatus("analyzing");
-    setError(null);
-    setSalesResult(null);
-
+  async function uploadSalesData() {
+    if (!salesFile) return;
     try {
       const formData = new FormData();
-      formData.append("file", file);
-      if (notes) formData.append("notes", notes);
+      formData.append("file", salesFile);
+      if (salesNotes) formData.append("notes", salesNotes);
 
-      const res = await fetch("/api/analyze-sales", {
-        method: "POST",
-        body: formData,
-      });
+      const res = await fetch("/api/analyze-sales", { method: "POST", body: formData });
 
       if (!res.headers.get("content-type")?.includes("application/json")) {
-        throw new Error(
-          "The server took too long or hit an unexpected error. Please try again - if it " +
-            "keeps happening, try a smaller or simpler file.",
-        );
+        throw new Error(GENERIC_TIMEOUT_MESSAGE);
       }
 
       const data = await res.json();
-
       if (!res.ok) {
         throw new Error(data.error ?? "Something went wrong extracting your sales data.");
       }
 
-      if (data.reportId) {
-        router.push(`/sales/${data.reportId}`);
-        return;
-      }
-
       setSalesResult(data.result as SalesDataResult);
-      setStatus("done");
+      setSalesResultId(data.reportId ?? null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
-      setStatus("error");
+      setSalesError(err instanceof Error ? err.message : "Something went wrong.");
     }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!agencyFile && !salesFile) {
+      setFormError("Attach your agency report, your sales data, or both to continue.");
+      return;
+    }
+
+    setFormError(null);
+    setStatus("analyzing");
+    setResult(null);
+    setResultId(null);
+    setAgencyError(null);
+    setSalesResult(null);
+    setSalesResultId(null);
+    setSalesError(null);
+
+    await Promise.all([uploadAgencyReport(), uploadSalesData()]);
+
+    setStatus("done");
   }
 
   function reset() {
     setStatus("idle");
+    setFormError(null);
+    setAgencyFile(null);
+    setTrade("");
+    setSpendNotes("");
     setResult(null);
+    setResultId(null);
+    setAgencyError(null);
+    setSalesFile(null);
+    setSalesNotes("");
     setSalesResult(null);
-    setError(null);
+    setSalesResultId(null);
+    setSalesError(null);
   }
 
-  function selectUploadKind(kind: UploadKind) {
-    setUploadKind(kind);
-    setError(null);
-  }
+  const showCombinedSnapshot =
+    result?.documentSummary.totalSpendNumeric != null && salesResult?.totalRevenueNumeric != null;
 
   return (
     <div className="min-h-screen">
@@ -186,46 +190,66 @@ export default function Home() {
         {status !== "done" && (
           <div className="max-w-2xl mx-auto text-center mb-10">
             <h1 className="gradient-text font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-balance">
-              {uploadKind === "agency"
-                ? "Is your agency's report actually telling you anything?"
-                : "Track your sales month over month"}
+              Your monthly marketing &amp; sales check-in
             </h1>
             <p className="mt-4 text-ink-soft leading-relaxed">
-              {uploadKind === "agency"
-                ? "Upload the ad report or media plan your agency sent you. We'll diagnose it against a real media-buying framework: what's reasonable, what's missing, and exactly what to ask your agency at your next call."
-                : "Upload a sales or CRM export and we'll track revenue, deal volume, and average sale size over time - so you can see whether your ad spend is actually moving the needle."}
+              Upload this month&apos;s agency report, your sales/CRM export, or both together.
+              We&apos;ll diagnose the ad report against a real media-buying framework, track your
+              sales over time, and - when you upload both - show you whether the spend is
+              actually turning into business.
             </p>
           </div>
         )}
 
         {status !== "done" && (
-          <div className="mx-auto mb-6 flex max-w-xl justify-center gap-2">
-            {UPLOAD_KINDS.map((k) => (
-              <button
-                key={k.value}
-                type="button"
-                onClick={() => selectUploadKind(k.value)}
-                disabled={status === "analyzing"}
-                className={`rounded-full px-4 py-2 text-sm font-medium transition-colors disabled:opacity-50 ${
-                  uploadKind === k.value
-                    ? "bg-ink text-white shadow-sm"
-                    : "bg-paper-raised text-ink-soft border border-line hover:text-ink"
-                }`}
-              >
-                {k.label}
-              </button>
-            ))}
-          </div>
-        )}
+          <form onSubmit={handleSubmit}>
+            <Reveal delay={120}>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto items-start">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2 text-center lg:text-left">
+                    Agency / Media Report
+                  </p>
+                  <UploadForm
+                    file={agencyFile}
+                    onFileChange={setAgencyFile}
+                    trade={trade}
+                    onTradeChange={setTrade}
+                    spendNotes={spendNotes}
+                    onSpendNotesChange={setSpendNotes}
+                    disabled={status === "analyzing"}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2 text-center lg:text-left">
+                    Sales Data (CRM)
+                  </p>
+                  <SalesUploadForm
+                    file={salesFile}
+                    onFileChange={setSalesFile}
+                    notes={salesNotes}
+                    onNotesChange={setSalesNotes}
+                    disabled={status === "analyzing"}
+                  />
+                </div>
+              </div>
+            </Reveal>
 
-        {status !== "done" && (
-          <Reveal delay={120}>
-            {uploadKind === "agency" ? (
-              <UploadForm onSubmit={handleSubmit} disabled={status === "analyzing"} />
-            ) : (
-              <SalesUploadForm onSubmit={handleSalesSubmit} disabled={status === "analyzing"} />
+            {formError && (
+              <p className="mt-4 max-w-xl mx-auto rounded-lg bg-severe-soft px-3 py-2 text-sm text-severe text-center">
+                {formError}
+              </p>
             )}
-          </Reveal>
+
+            <div className="max-w-xl mx-auto">
+              <button
+                type="submit"
+                disabled={status === "analyzing" || (!agencyFile && !salesFile)}
+                className="mt-6 w-full rounded-lg bg-gradient-to-r from-brand-a via-brand-b to-brand-c bg-[length:160%_100%] bg-[position:0%_0%] px-4 py-3 font-medium text-white shadow-md transition-[background-position,transform,box-shadow] duration-300 hover:bg-[position:100%_0%] hover:shadow-lg active:scale-[0.99] disabled:opacity-40 disabled:hover:bg-[position:0%_0%] disabled:hover:shadow-md"
+              >
+                {status === "analyzing" ? "Processing..." : "Upload this month's data"}
+              </button>
+            </div>
+          </form>
         )}
 
         {status === "analyzing" && (
@@ -234,44 +258,106 @@ export default function Home() {
               <span className="block h-full w-1/3 animate-[loadbar_1.1s_ease-in-out_infinite] rounded-full bg-accent" />
             </span>
             <p className="text-center text-sm text-ink-soft">
-              Reading your report and comparing it against the diagnostic framework - this can
-              take up to a minute.
+              Reading what you uploaded - this can take up to a couple of minutes,
+              especially with both files at once.
             </p>
           </div>
         )}
 
-        {status === "error" && error && (
-          <div className="max-w-xl mx-auto mt-6 rounded-lg border border-severe/20 bg-severe-soft p-4 text-sm text-severe">
-            {error}
-          </div>
-        )}
-
-        {status === "done" && result && (
-          <div className="mt-2">
-            <div className="no-print max-w-4xl mx-auto mb-6 flex items-center justify-between gap-4">
-              <button
-                onClick={reset}
-                className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
-              >
-                &larr; Analyze another report
-              </button>
-              <ReportActions result={result} />
-            </div>
-            <ResultsView result={result} />
-          </div>
-        )}
-
-        {status === "done" && salesResult && (
+        {status === "done" && (
           <div className="mt-2">
             <div className="no-print max-w-4xl mx-auto mb-6">
               <button
                 onClick={reset}
                 className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
               >
-                &larr; Upload another sales file
+                &larr; Upload another month
               </button>
             </div>
-            <SalesResultsView result={salesResult} />
+
+            {showCombinedSnapshot && result && salesResult && (
+              <Reveal className="max-w-4xl mx-auto mb-8">
+                <div className="rounded-xl border border-accent/20 bg-accent-soft p-5">
+                  <p className="text-xs font-semibold uppercase tracking-widest text-accent mb-2">
+                    This month at a glance
+                  </p>
+                  <p className="text-sm text-ink leading-relaxed">
+                    You spent{" "}
+                    <span className="font-semibold">
+                      ${result.documentSummary.totalSpendNumeric!.toLocaleString()}
+                    </span>{" "}
+                    on ads against{" "}
+                    <span className="font-semibold">
+                      ${salesResult.totalRevenueNumeric!.toLocaleString()}
+                    </span>{" "}
+                    in reported revenue
+                    {salesResult.dealCount ? ` (${salesResult.dealCount})` : ""}. See the{" "}
+                    <Link href="/trends" className="underline underline-offset-4 hover:text-ink">
+                      Trends page
+                    </Link>{" "}
+                    once you&apos;ve uploaded a couple of months to see whether spend changes
+                    track with revenue changes.
+                  </p>
+                </div>
+              </Reveal>
+            )}
+
+            {agencyFile && (
+              <div className="mb-10">
+                {result ? (
+                  <>
+                    <div className="no-print max-w-4xl mx-auto mb-4 flex justify-end">
+                      <ReportActions result={result} />
+                    </div>
+                    <ResultsView result={result} />
+                    {resultId && (
+                      <p className="no-print max-w-4xl mx-auto mt-3 text-center text-xs text-ink-soft">
+                        <Link
+                          href={`/reports/${resultId}`}
+                          className="underline underline-offset-4 hover:text-ink"
+                        >
+                          View this report&apos;s permanent page
+                        </Link>
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  agencyError && (
+                    <div className="max-w-xl mx-auto rounded-lg border border-severe/20 bg-severe-soft p-4 text-sm text-severe">
+                      <p className="font-medium mb-1">Agency report upload failed</p>
+                      {agencyError}
+                    </div>
+                  )
+                )}
+              </div>
+            )}
+
+            {salesFile && (
+              <div>
+                {salesResult ? (
+                  <>
+                    <SalesResultsView result={salesResult} />
+                    {salesResultId && (
+                      <p className="no-print max-w-4xl mx-auto mt-3 text-center text-xs text-ink-soft">
+                        <Link
+                          href={`/sales/${salesResultId}`}
+                          className="underline underline-offset-4 hover:text-ink"
+                        >
+                          View this snapshot&apos;s permanent page
+                        </Link>
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  salesError && (
+                    <div className="max-w-xl mx-auto rounded-lg border border-severe/20 bg-severe-soft p-4 text-sm text-severe">
+                      <p className="font-medium mb-1">Sales data upload failed</p>
+                      {salesError}
+                    </div>
+                  )
+                )}
+              </div>
+            )}
           </div>
         )}
       </main>

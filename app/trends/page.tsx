@@ -13,12 +13,7 @@ import {
   type ReportPoint,
 } from "@/lib/trends";
 import { kpiTotalSeries, costPerLeadSeries } from "@/lib/kpiTrends";
-import {
-  revenueSeries,
-  salesEffectiveDate,
-  sortSalesByEffectiveDate,
-  type SalesPoint,
-} from "@/lib/salesTrends";
+import { sortSalesByEffectiveDate, type SalesPoint } from "@/lib/salesTrends";
 import { computeHealthScore, TONE_HEX } from "@/lib/score";
 import StatTile from "@/components/StatTile";
 import SpendTrendChart from "@/components/charts/SpendTrendChart";
@@ -26,6 +21,7 @@ import AssessmentTimeline from "@/components/charts/AssessmentTimeline";
 import ChannelTrendChart from "@/components/charts/ChannelTrendChart";
 import CostPerLeadChart from "@/components/charts/CostPerLeadChart";
 import MetricBarChart from "@/components/charts/MetricBarChart";
+import SalesTrendsSection from "@/components/SalesTrendsSection";
 import BrandMark from "@/components/BrandMark";
 import GradientBlobs from "@/components/GradientBlobs";
 import Reveal from "@/components/Reveal";
@@ -464,109 +460,5 @@ function TrendsBody({ reports, undatedCount }: { reports: ReportPoint[]; undated
         </Reveal>
       )}
     </>
-  );
-}
-
-function SalesTrendsSection({
-  sales,
-  adReports,
-  className,
-}: {
-  sales: SalesPoint[];
-  adReports: ReportPoint[];
-  className?: string;
-}) {
-  const windowSales = sales.slice(-TREND_WINDOW);
-  const earlier = windowSales[0];
-  const later = windowSales[windowSales.length - 1];
-  const revPoints = revenueSeries(windowSales);
-
-  const revDeltaPct = percentChange(
-    earlier.result.totalRevenueNumeric,
-    later.result.totalRevenueNumeric,
-  );
-  const sinceLabel = `since ${monthLabel(salesEffectiveDate(earlier))}`;
-
-  // Independent window over the ad-report side, matching TrendsBody's own
-  // windowing - the two collections aren't guaranteed to share periods, so
-  // this is a side-by-side visual comparison, not a merged/aligned chart.
-  const adWindow = adReports.slice(-TREND_WINDOW);
-  const spendPoints = adWindow
-    .filter((r) => r.result.documentSummary.totalSpendNumeric != null)
-    .map((r) => ({
-      label: monthLabel(reportEffectiveDate(r)),
-      value: r.result.documentSummary.totalSpendNumeric as number,
-    }));
-
-  return (
-    <div className={className}>
-      <h2 className="gradient-text font-serif text-2xl font-semibold tracking-tight mb-2">Sales</h2>
-      <p className="text-sm text-ink-soft mb-8">
-        From your last {windowSales.length} sales snapshot{windowSales.length === 1 ? "" : "s"}:{" "}
-        {monthLabel(salesEffectiveDate(earlier))} to {monthLabel(salesEffectiveDate(later))}.{" "}
-        <Link href="/history" className="underline underline-offset-4 hover:text-ink">
-          View sales history
-        </Link>
-      </p>
-
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">
-        <Reveal delay={0}>
-          <StatTile
-            accent="a"
-            label="Latest revenue"
-            value={later.result.totalRevenue ?? "—"}
-            delta={
-              revDeltaPct != null
-                ? `${revDeltaPct >= 0 ? "+" : ""}${Math.round(revDeltaPct)}% ${sinceLabel}`
-                : null
-            }
-            deltaTone={revDeltaPct != null ? (revDeltaPct >= 0 ? "good" : "severe") : "neutral"}
-          />
-        </Reveal>
-        <Reveal delay={80}>
-          <StatTile accent="b" label="Latest sales / jobs" value={later.result.dealCount ?? "—"} />
-        </Reveal>
-        <Reveal delay={160}>
-          <StatTile accent="c" label="Latest average sale" value={later.result.avgDealSize ?? "—"} />
-        </Reveal>
-      </div>
-
-      {revPoints.length >= 2 && (
-        <Reveal className="mb-10">
-          <h3 className="font-serif text-lg font-semibold text-ink mb-1">Revenue over time</h3>
-          <p className="text-xs text-ink-soft/70 mb-3">
-            Total revenue reported in each sales snapshot.
-          </p>
-          <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
-            <SpendTrendChart points={revPoints} color="#0891b2" ariaLabel="Revenue over time" />
-          </div>
-        </Reveal>
-      )}
-
-      {revPoints.length >= 2 && spendPoints.length >= 2 && (
-        <Reveal className="mb-10">
-          <h3 className="font-serif text-lg font-semibold text-ink mb-1">Ad spend vs. revenue</h3>
-          <p className="text-xs text-ink-soft/70 mb-3">
-            Placed side by side so you can compare trend direction, not exact scale - spend and
-            revenue are usually very different magnitudes, and these two charts may not cover
-            exactly the same periods.
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
-              <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2">
-                Ad spend
-              </p>
-              <SpendTrendChart points={spendPoints} ariaLabel="Ad spend over time" />
-            </div>
-            <div className="card-lift rounded-xl border border-line bg-paper-raised p-4 sm:p-6">
-              <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2">
-                Revenue
-              </p>
-              <SpendTrendChart points={revPoints} color="#0891b2" ariaLabel="Revenue over time" />
-            </div>
-          </div>
-        </Reveal>
-      )}
-    </div>
   );
 }

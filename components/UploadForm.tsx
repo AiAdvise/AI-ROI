@@ -5,14 +5,24 @@ import { useRef, useState } from "react";
 const TRADES = ["HVAC", "Plumbing", "Roofing", "Siding & Windows", "Electrical", "Other"];
 
 interface UploadFormProps {
-  onSubmit: (file: File, trade: string | null, spendNotes: string | null) => void;
+  file: File | null;
+  onFileChange: (file: File | null) => void;
+  trade: string;
+  onTradeChange: (trade: string) => void;
+  spendNotes: string;
+  onSpendNotesChange: (notes: string) => void;
   disabled: boolean;
 }
 
-export default function UploadForm({ onSubmit, disabled }: UploadFormProps) {
-  const [file, setFile] = useState<File | null>(null);
-  const [trade, setTrade] = useState<string>("");
-  const [spendNotes, setSpendNotes] = useState<string>("");
+export default function UploadForm({
+  file,
+  onFileChange,
+  trade,
+  onTradeChange,
+  spendNotes,
+  onSpendNotesChange,
+  disabled,
+}: UploadFormProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -30,7 +40,7 @@ export default function UploadForm({ onSubmit, disabled }: UploadFormProps) {
       return;
     }
     setError(null);
-    setFile(f);
+    onFileChange(f);
   }
 
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
@@ -39,19 +49,9 @@ export default function UploadForm({ onSubmit, disabled }: UploadFormProps) {
     handleFile(e.dataTransfer.files?.[0]);
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!file) {
-      setError("Please select a file to analyze.");
-      return;
-    }
-    onSubmit(file, trade || null, spendNotes.trim() || null);
-  }
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full max-w-xl mx-auto rounded-2xl border border-line bg-paper-raised p-6 sm:p-8 shadow-[0_1px_2px_rgba(28,36,52,0.04),0_8px_24px_rgba(28,36,52,0.05)]"
+    <div
+      className={`w-full max-w-xl mx-auto rounded-2xl border border-line bg-paper-raised p-6 sm:p-8 shadow-[0_1px_2px_rgba(28,36,52,0.04),0_8px_24px_rgba(28,36,52,0.05)] ${disabled ? "opacity-60 pointer-events-none" : ""}`}
     >
       <div
         onDragOver={(e) => {
@@ -70,6 +70,7 @@ export default function UploadForm({ onSubmit, disabled }: UploadFormProps) {
           type="file"
           accept={acceptedTypes.join(",")}
           className="hidden"
+          disabled={disabled}
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
         {file ? (
@@ -100,7 +101,7 @@ export default function UploadForm({ onSubmit, disabled }: UploadFormProps) {
         </label>
         <select
           value={trade}
-          onChange={(e) => setTrade(e.target.value)}
+          onChange={(e) => onTradeChange(e.target.value)}
           className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         >
           <option value="">Select a trade...</option>
@@ -121,7 +122,7 @@ export default function UploadForm({ onSubmit, disabled }: UploadFormProps) {
         </label>
         <textarea
           value={spendNotes}
-          onChange={(e) => setSpendNotes(e.target.value)}
+          onChange={(e) => onSpendNotesChange(e.target.value)}
           rows={2}
           placeholder="e.g. &quot;$2,400 total&quot; or, if you know the breakdown, &quot;CTV: $1,500, SEM: $600, Pre-Roll: $300&quot;"
           className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
@@ -135,14 +136,6 @@ export default function UploadForm({ onSubmit, disabled }: UploadFormProps) {
       {error && (
         <p className="mt-4 rounded-lg bg-severe-soft px-3 py-2 text-sm text-severe">{error}</p>
       )}
-
-      <button
-        type="submit"
-        disabled={disabled || !file}
-        className="mt-6 w-full rounded-lg bg-gradient-to-r from-brand-a via-brand-b to-brand-c bg-[length:160%_100%] bg-[position:0%_0%] px-4 py-3 font-medium text-white shadow-md transition-[background-position,transform,box-shadow] duration-300 hover:bg-[position:100%_0%] hover:shadow-lg active:scale-[0.99] disabled:opacity-40 disabled:hover:bg-[position:0%_0%] disabled:hover:shadow-md"
-      >
-        {disabled ? "Analyzing..." : "Diagnose my report"}
-      </button>
-    </form>
+    </div>
   );
 }
