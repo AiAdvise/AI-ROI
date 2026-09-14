@@ -53,7 +53,7 @@ export default function SalesUploadForm({
 
   return (
     <div
-      className={`w-full max-w-xl mx-auto rounded-2xl border border-line bg-paper-raised p-6 sm:p-8 shadow-[0_1px_2px_rgba(28,36,52,0.04),0_8px_24px_rgba(28,36,52,0.05)] ${disabled ? "opacity-60 pointer-events-none" : ""}`}
+      className={`w-full rounded-2xl border border-line bg-paper-raised p-6 sm:p-8 shadow-[0_1px_2px_rgba(28,36,52,0.04),0_8px_24px_rgba(28,36,52,0.05)] ${disabled ? "opacity-60 pointer-events-none" : ""}`}
     >
       <div
         onDragOver={(e) => {

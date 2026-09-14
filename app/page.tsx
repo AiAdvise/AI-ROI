@@ -187,67 +187,70 @@ export default function Home() {
 
       <main className="relative px-4 py-14 sm:py-20">
         {status !== "done" && <GradientBlobs />}
-        {status !== "done" && (
-          <div className="max-w-2xl mx-auto text-center mb-10">
-            <h1 className="gradient-text font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-balance">
-              Your monthly marketing &amp; sales check-in
-            </h1>
-            <p className="mt-4 text-ink-soft leading-relaxed">
-              Upload this month&apos;s agency report, your sales/CRM export, or both together.
-              We&apos;ll diagnose the ad report against a real media-buying framework, track your
-              sales over time, and - when you upload both - show you whether the spend is
-              actually turning into business.
-            </p>
-          </div>
-        )}
 
         {status !== "done" && (
-          <form onSubmit={handleSubmit}>
-            <Reveal delay={120}>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl mx-auto items-start">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2 text-center lg:text-left">
-                    Agency / Media Report
+          <form onSubmit={handleSubmit} className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-start">
+              <Reveal>
+                <div className="text-center lg:text-left">
+                  <h1 className="gradient-text font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-balance">
+                    Your monthly marketing &amp; sales check-in
+                  </h1>
+                  <p className="mt-4 text-ink-soft leading-relaxed">
+                    Upload this month&apos;s agency report, your sales/CRM export, or both
+                    together. We&apos;ll diagnose the ad report against a real media-buying
+                    framework, track your sales over time, and - when you upload both - show you
+                    whether the spend is actually turning into business.
                   </p>
-                  <UploadForm
-                    file={agencyFile}
-                    onFileChange={setAgencyFile}
-                    trade={trade}
-                    onTradeChange={setTrade}
-                    spendNotes={spendNotes}
-                    onSpendNotesChange={setSpendNotes}
-                    disabled={status === "analyzing"}
-                  />
                 </div>
+              </Reveal>
+
+              <Reveal delay={120}>
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2 text-center lg:text-left">
-                    Sales Data (CRM)
-                  </p>
-                  <SalesUploadForm
-                    file={salesFile}
-                    onFileChange={setSalesFile}
-                    notes={salesNotes}
-                    onNotesChange={setSalesNotes}
-                    disabled={status === "analyzing"}
-                  />
+                  <div className="space-y-5">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2">
+                        Agency / Media Report
+                      </p>
+                      <UploadForm
+                        file={agencyFile}
+                        onFileChange={setAgencyFile}
+                        trade={trade}
+                        onTradeChange={setTrade}
+                        spendNotes={spendNotes}
+                        onSpendNotesChange={setSpendNotes}
+                        disabled={status === "analyzing"}
+                      />
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2">
+                        Sales Data (CRM)
+                      </p>
+                      <SalesUploadForm
+                        file={salesFile}
+                        onFileChange={setSalesFile}
+                        notes={salesNotes}
+                        onNotesChange={setSalesNotes}
+                        disabled={status === "analyzing"}
+                      />
+                    </div>
+                  </div>
+
+                  {formError && (
+                    <p className="mt-4 rounded-lg bg-severe-soft px-3 py-2 text-sm text-severe text-center">
+                      {formError}
+                    </p>
+                  )}
+
+                  <button
+                    type="submit"
+                    disabled={status === "analyzing" || (!agencyFile && !salesFile)}
+                    className="mt-5 w-full rounded-lg bg-gradient-to-r from-brand-a via-brand-b to-brand-c bg-[length:160%_100%] bg-[position:0%_0%] px-4 py-3 font-medium text-white shadow-md transition-[background-position,transform,box-shadow] duration-300 hover:bg-[position:100%_0%] hover:shadow-lg active:scale-[0.99] disabled:opacity-40 disabled:hover:bg-[position:0%_0%] disabled:hover:shadow-md"
+                  >
+                    {status === "analyzing" ? "Processing..." : "Upload this month's data"}
+                  </button>
                 </div>
-              </div>
-            </Reveal>
-
-            {formError && (
-              <p className="mt-4 max-w-xl mx-auto rounded-lg bg-severe-soft px-3 py-2 text-sm text-severe text-center">
-                {formError}
-              </p>
-            )}
-
-            <div className="max-w-xl mx-auto">
-              <button
-                type="submit"
-                disabled={status === "analyzing" || (!agencyFile && !salesFile)}
-                className="mt-6 w-full rounded-lg bg-gradient-to-r from-brand-a via-brand-b to-brand-c bg-[length:160%_100%] bg-[position:0%_0%] px-4 py-3 font-medium text-white shadow-md transition-[background-position,transform,box-shadow] duration-300 hover:bg-[position:100%_0%] hover:shadow-lg active:scale-[0.99] disabled:opacity-40 disabled:hover:bg-[position:0%_0%] disabled:hover:shadow-md"
-              >
-                {status === "analyzing" ? "Processing..." : "Upload this month's data"}
-              </button>
+              </Reveal>
             </div>
           </form>
         )}
