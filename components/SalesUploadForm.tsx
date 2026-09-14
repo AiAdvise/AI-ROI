@@ -3,13 +3,20 @@
 import { useRef, useState } from "react";
 
 interface SalesUploadFormProps {
-  onSubmit: (file: File, notes: string | null) => void;
+  file: File | null;
+  onFileChange: (file: File | null) => void;
+  notes: string;
+  onNotesChange: (notes: string) => void;
   disabled: boolean;
 }
 
-export default function SalesUploadForm({ onSubmit, disabled }: SalesUploadFormProps) {
-  const [file, setFile] = useState<File | null>(null);
-  const [notes, setNotes] = useState<string>("");
+export default function SalesUploadForm({
+  file,
+  onFileChange,
+  notes,
+  onNotesChange,
+  disabled,
+}: SalesUploadFormProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -35,7 +42,7 @@ export default function SalesUploadForm({ onSubmit, disabled }: SalesUploadFormP
       return;
     }
     setError(null);
-    setFile(f);
+    onFileChange(f);
   }
 
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
@@ -44,19 +51,9 @@ export default function SalesUploadForm({ onSubmit, disabled }: SalesUploadFormP
     handleFile(e.dataTransfer.files?.[0]);
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!file) {
-      setError("Please select a file to upload.");
-      return;
-    }
-    onSubmit(file, notes.trim() || null);
-  }
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="w-full max-w-xl mx-auto rounded-2xl border border-line bg-paper-raised p-6 sm:p-8 shadow-[0_1px_2px_rgba(28,36,52,0.04),0_8px_24px_rgba(28,36,52,0.05)]"
+    <div
+      className={`w-full max-w-xl mx-auto rounded-2xl border border-line bg-paper-raised p-6 sm:p-8 shadow-[0_1px_2px_rgba(28,36,52,0.04),0_8px_24px_rgba(28,36,52,0.05)] ${disabled ? "opacity-60 pointer-events-none" : ""}`}
     >
       <div
         onDragOver={(e) => {
@@ -75,6 +72,7 @@ export default function SalesUploadForm({ onSubmit, disabled }: SalesUploadFormP
           type="file"
           accept={acceptedTypes.join(",")}
           className="hidden"
+          disabled={disabled}
           onChange={(e) => handleFile(e.target.files?.[0])}
         />
         {file ? (
@@ -101,7 +99,7 @@ export default function SalesUploadForm({ onSubmit, disabled }: SalesUploadFormP
         </label>
         <textarea
           value={notes}
-          onChange={(e) => setNotes(e.target.value)}
+          onChange={(e) => onNotesChange(e.target.value)}
           rows={2}
           placeholder="e.g. &quot;This is just residential jobs, doesn't include commercial&quot;"
           className="w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink-soft/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
@@ -111,14 +109,6 @@ export default function SalesUploadForm({ onSubmit, disabled }: SalesUploadFormP
       {error && (
         <p className="mt-4 rounded-lg bg-severe-soft px-3 py-2 text-sm text-severe">{error}</p>
       )}
-
-      <button
-        type="submit"
-        disabled={disabled || !file}
-        className="mt-6 w-full rounded-lg bg-gradient-to-r from-brand-a via-brand-b to-brand-c bg-[length:160%_100%] bg-[position:0%_0%] px-4 py-3 font-medium text-white shadow-md transition-[background-position,transform,box-shadow] duration-300 hover:bg-[position:100%_0%] hover:shadow-lg active:scale-[0.99] disabled:opacity-40 disabled:hover:bg-[position:0%_0%] disabled:hover:shadow-md"
-      >
-        {disabled ? "Extracting..." : "Track this month's sales"}
-      </button>
-    </form>
+    </div>
   );
 }
