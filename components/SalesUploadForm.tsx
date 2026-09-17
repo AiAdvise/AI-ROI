@@ -63,8 +63,12 @@ export default function SalesUploadForm({
         onDragLeave={() => setIsDragging(false)}
         onDrop={handleDrop}
         onClick={() => inputRef.current?.click()}
-        className={`cursor-pointer rounded-xl border-2 border-dashed p-5 text-center transition-colors ${
-          isDragging ? "border-accent bg-accent-soft" : "border-line bg-paper hover:border-ink-soft/40"
+        className={`cursor-pointer rounded-xl p-5 text-center transition-[background-position,box-shadow] duration-300 ${
+          file
+            ? "border border-line bg-paper hover:border-ink-soft/40"
+            : `bg-gradient-to-r from-brand-a via-brand-b to-brand-c bg-[length:160%_100%] text-white shadow-md hover:shadow-lg ${
+                isDragging ? "bg-[position:100%_0%] shadow-lg" : "bg-[position:0%_0%] hover:bg-[position:100%_0%]"
+              }`
         }`}
       >
         <input
@@ -84,9 +88,9 @@ export default function SalesUploadForm({
           </div>
         ) : (
           <div>
-            <p className="font-medium text-ink">Drag and drop a sales/CRM export</p>
-            <p className="text-sm text-ink-soft mt-1">
-              or click to browse - PDF, PNG, JPEG, WEBP, or CSV
+            <p className="font-semibold">Upload your sales or CRM export</p>
+            <p className="text-sm text-white/80 mt-1">
+              Click or drop a file - PDF, PNG, JPEG, WEBP, or CSV
             </p>
           </div>
         )}
