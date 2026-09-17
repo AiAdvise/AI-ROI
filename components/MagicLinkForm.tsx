@@ -9,12 +9,14 @@ interface MagicLinkFormProps {
   submitLabel: string;
   sendingLabel: string;
   sentDescription: string;
+  buttonClassName?: string;
 }
 
 export default function MagicLinkForm({
   submitLabel,
   sendingLabel,
   sentDescription,
+  buttonClassName,
 }: MagicLinkFormProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
@@ -70,7 +72,10 @@ export default function MagicLinkForm({
       <button
         type="submit"
         disabled={status === "sending"}
-        className="w-full rounded-lg bg-gradient-to-r from-brand-a via-brand-b to-brand-c bg-[length:160%_100%] bg-[position:0%_0%] px-4 py-2.5 text-sm font-medium text-white shadow-md transition-[background-position,transform,box-shadow] duration-300 hover:bg-[position:100%_0%] hover:shadow-lg active:scale-[0.99] disabled:opacity-50 disabled:hover:bg-[position:0%_0%]"
+        className={
+          buttonClassName ??
+          "w-full rounded-lg bg-gradient-to-r from-brand-a via-brand-b to-brand-c bg-[length:160%_100%] bg-[position:0%_0%] px-4 py-2.5 text-sm font-medium text-white shadow-md transition-[background-position,transform,box-shadow] duration-300 hover:bg-[position:100%_0%] hover:shadow-lg active:scale-[0.99] disabled:opacity-50 disabled:hover:bg-[position:0%_0%]"
+        }
       >
         {status === "sending" ? sendingLabel : submitLabel}
       </button>
