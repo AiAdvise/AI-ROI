@@ -71,6 +71,10 @@ const TRUST_ITEMS = [
 
 const GRADIENT_TEXT = "bg-gradient-to-br from-[#C99CE0] to-[#F2A9C9] bg-clip-text text-transparent";
 
+function trackCtaClick() {
+  window.fbq?.("trackCustom", "ClickedSignupCTA");
+}
+
 export default function MarketingLandingPage() {
   return (
     <main className="relative overflow-hidden bg-[#14283D] font-[family-name:var(--font-body)] text-white">
@@ -102,6 +106,7 @@ export default function MarketingLandingPage() {
           </div>
           <Link
             href="/signup"
+            onClick={trackCtaClick}
             className="rounded-md bg-[#8B3FA8] px-4 py-2 text-sm font-bold text-white shadow-[0_4px_14px_rgba(139,63,168,0.35)] transition-colors hover:bg-[#6E2F87]"
           >
             Get Early Access, Free
@@ -127,6 +132,7 @@ export default function MarketingLandingPage() {
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link
               href="/signup"
+              onClick={trackCtaClick}
               className="rounded-md bg-[#8B3FA8] px-6 py-3 text-sm font-bold text-white shadow-[0_8px_22px_rgba(139,63,168,0.35)] transition-colors hover:bg-[#6E2F87]"
             >
               Get Early Access, Free
@@ -204,6 +210,7 @@ export default function MarketingLandingPage() {
             <div className="mt-6">
               <Link
                 href="/signup"
+                onClick={trackCtaClick}
                 className="inline-block rounded-md bg-[#8B3FA8] px-6 py-3 text-sm font-bold text-white shadow-[0_8px_22px_rgba(139,63,168,0.35)] transition-colors hover:bg-[#6E2F87]"
               >
                 Get Early Access, Free
@@ -286,6 +293,7 @@ export default function MarketingLandingPage() {
           </h2>
           <Link
             href="/signup"
+            onClick={trackCtaClick}
             className="rounded-md bg-[#8B3FA8] px-6 py-3 text-sm font-bold text-white shadow-[0_8px_22px_rgba(139,63,168,0.35)] transition-colors hover:bg-[#6E2F87]"
           >
             Get Early Access, Free
