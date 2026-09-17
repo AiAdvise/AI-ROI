@@ -3,7 +3,10 @@ import { analyzeSalesData, type SalesFileInput } from "@/lib/anthropic";
 import { createClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+// See app/api/analyze/route.ts - 60s was observed too tight for at least one
+// real upload on the agency-report pipeline; this pipeline makes the same
+// kind of model call, so it gets the same headroom.
+export const maxDuration = 120;
 
 const IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp"]);
 const CSV_TYPES = new Set(["text/csv", "application/vnd.ms-excel"]);
