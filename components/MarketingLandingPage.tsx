@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import GradientBlobs from "@/components/GradientBlobs";
 import Reveal from "@/components/Reveal";
@@ -241,11 +242,13 @@ export default function MarketingLandingPage() {
       <Reveal className="border-y border-white/10 bg-white/[0.03]">
         <div className="relative mx-auto max-w-4xl px-4 py-14 sm:px-8">
           <div className="flex gap-5">
-            <svg viewBox="0 0 40 40" className="h-14 w-14 flex-shrink-0" aria-hidden>
-              <circle cx="20" cy="20" r="20" fill="#E4DCEF" />
-              <circle cx="20" cy="16" r="7" fill="#8B3FA8" />
-              <path d="M6 36c2-8 9-12 14-12s12 4 14 12" fill="#8B3FA8" />
-            </svg>
+            <Image
+              src="/founder.png"
+              alt="Founder, AdVitals"
+              width={56}
+              height={56}
+              className="h-14 w-14 flex-shrink-0 rounded-full bg-[#E4DCEF] object-cover"
+            />
             <div>
               <p className="text-lg italic leading-relaxed text-white">
                 &ldquo;I&apos;ve spent years on the media-buying side of this industry and kept
