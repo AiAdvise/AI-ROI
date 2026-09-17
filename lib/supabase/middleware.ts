@@ -34,7 +34,10 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && !isPublicPath && !isApiPath) {
     const url = request.nextUrl.clone();
-    url.pathname = "/login";
+    // Cold traffic landing on the bare domain should hit the persuasive
+    // signup page, not a context-less login form. Its magic-link form works
+    // identically for returning users, so this costs existing users nothing.
+    url.pathname = request.nextUrl.pathname === "/" ? "/signup" : "/login";
     return NextResponse.redirect(url);
   }
 
