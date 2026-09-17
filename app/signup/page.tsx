@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import GradientBlobs from "@/components/GradientBlobs";
 import Reveal from "@/components/Reveal";
-import MagicLinkForm from "@/components/MagicLinkForm";
+import SignupMagicLinkForm from "@/components/SignupMagicLinkForm";
 import GradeCardPreview from "@/components/GradeCardPreview";
 import ChannelPerformancePreview from "@/components/ChannelPerformancePreview";
 import FindingsPreview from "@/components/FindingsPreview";
@@ -103,7 +103,7 @@ export default async function SignupPage() {
                 {spotsMessage}
               </p>
 
-              <MagicLinkForm
+              <SignupMagicLinkForm
                 submitLabel="Get Early Access, Free"
                 sendingLabel="Sending link..."
                 sentDescription="for your beta access link"
@@ -145,7 +145,7 @@ export default async function SignupPage() {
             <p className="mt-3 text-[#F0A8C8]">{spotsMessage}</p>
 
             <div className="mx-auto mt-6 max-w-sm">
-              <MagicLinkForm
+              <SignupMagicLinkForm
                 submitLabel="Get Early Access, Free"
                 sendingLabel="Sending link..."
                 sentDescription="for your beta access link"

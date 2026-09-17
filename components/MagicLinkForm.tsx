@@ -10,6 +10,7 @@ interface MagicLinkFormProps {
   sendingLabel: string;
   sentDescription: string;
   buttonClassName?: string;
+  onSuccess?: () => void;
 }
 
 export default function MagicLinkForm({
@@ -17,6 +18,7 @@ export default function MagicLinkForm({
   sendingLabel,
   sentDescription,
   buttonClassName,
+  onSuccess,
 }: MagicLinkFormProps) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
@@ -44,6 +46,7 @@ export default function MagicLinkForm({
     }
 
     setStatus("sent");
+    onSuccess?.();
   }
 
   if (status === "sent") {
