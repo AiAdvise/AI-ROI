@@ -3,7 +3,9 @@ import GradientBlobs from "@/components/GradientBlobs";
 import Reveal from "@/components/Reveal";
 import MagicLinkForm from "@/components/MagicLinkForm";
 import GradeCardPreview from "@/components/GradeCardPreview";
+import ChannelPerformancePreview from "@/components/ChannelPerformancePreview";
 import FindingsPreview from "@/components/FindingsPreview";
+import BenchmarkComparisonPreview from "@/components/BenchmarkComparisonPreview";
 import EmailDraftPreview from "@/components/EmailDraftPreview";
 
 const FOUNDING_PRICE_SPOTS = 10;
@@ -23,6 +25,10 @@ export default async function SignupPage() {
   const supabase = await createClient();
   const { data: spotsTaken } = await supabase.rpc("beta_spots_taken");
   const spotsLeft = Math.max(0, FOUNDING_PRICE_SPOTS - (spotsTaken ?? 0));
+  const spotsMessage =
+    spotsLeft > 0
+      ? `${spotsLeft} of ${FOUNDING_PRICE_SPOTS} early access spots left at that price.`
+      : "Early access pricing is claimed — join the beta below and we'll follow up on pricing.";
 
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#14283D] px-4 py-10 font-[family-name:var(--font-body)] text-white sm:px-8 sm:py-14 lg:flex lg:min-h-screen lg:flex-col lg:justify-center lg:px-16 lg:py-20">
@@ -93,16 +99,9 @@ export default async function SignupPage() {
             <GradeCardPreview />
 
             <div className="mt-6">
-              {spotsLeft > 0 ? (
-                <p className="mb-3 text-sm font-semibold text-[#F0A8C8] lg:text-base">
-                  {spotsLeft} of {FOUNDING_PRICE_SPOTS} early access spots left at that price.
-                </p>
-              ) : (
-                <p className="mb-3 text-sm font-semibold text-[#C7D2DD] lg:text-base">
-                  Early access pricing is claimed — join the beta below and we&apos;ll follow up
-                  on pricing.
-                </p>
-              )}
+              <p className="mb-3 text-sm font-semibold text-[#F0A8C8] lg:text-base">
+                {spotsMessage}
+              </p>
 
               <MagicLinkForm
                 submitLabel="Get Early Access, Free"
@@ -122,7 +121,7 @@ export default async function SignupPage() {
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-sm font-semibold text-[#C99CE0]">See exactly what you get</p>
             <h2 className="mt-2 font-[family-name:var(--font-heading)] text-2xl font-bold sm:text-3xl">
-              Real findings from a real report — not a mockup.
+              Real output from a real report — not a mockup.
             </h2>
             <p className="mt-3 text-[#C7D2DD]">
               These are pulled straight from an actual diagnostic. Yours will look like this,
@@ -130,9 +129,33 @@ export default async function SignupPage() {
             </p>
           </div>
 
-          <div className="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-10">
+          <div className="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-10 lg:items-start">
+            <ChannelPerformancePreview />
+            <BenchmarkComparisonPreview />
             <FindingsPreview />
             <EmailDraftPreview />
+          </div>
+        </Reveal>
+
+        <Reveal className="mt-16 lg:mt-24">
+          <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-8 text-center backdrop-blur-sm sm:p-12">
+            <h2 className="font-[family-name:var(--font-heading)] text-2xl font-bold sm:text-3xl">
+              Ready to find out where your ad dollars are actually going?
+            </h2>
+            <p className="mt-3 text-[#F0A8C8]">{spotsMessage}</p>
+
+            <div className="mx-auto mt-6 max-w-sm">
+              <MagicLinkForm
+                submitLabel="Get Early Access, Free"
+                sendingLabel="Sending link..."
+                sentDescription="for your beta access link"
+                buttonClassName={MARKETING_BUTTON_CLASSES}
+              />
+            </div>
+
+            <p className="mt-4 text-xs text-[#93A6B8]">
+              Not shared with your ad rep — this tool works for you, not for them.
+            </p>
           </div>
         </Reveal>
       </div>
