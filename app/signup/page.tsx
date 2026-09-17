@@ -93,12 +93,12 @@ export default async function SignupPage() {
             <div className="mt-6">
               {spotsLeft > 0 ? (
                 <p className="mb-3 text-sm font-semibold text-[#F0A8C8] lg:text-base">
-                  {spotsLeft} of {FOUNDING_PRICE_SPOTS} founding spots left at that price.
+                  {spotsLeft} of {FOUNDING_PRICE_SPOTS} early access spots left at that price.
                 </p>
               ) : (
                 <p className="mb-3 text-sm font-semibold text-[#C7D2DD] lg:text-base">
-                  Founding pricing is claimed — join the beta below and we&apos;ll follow up on
-                  pricing.
+                  Early access pricing is claimed — join the beta below and we&apos;ll follow up
+                  on pricing.
                 </p>
               )}
 
