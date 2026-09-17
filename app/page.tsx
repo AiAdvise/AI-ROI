@@ -12,6 +12,7 @@ import ReportPreviewMockup from "@/components/ReportPreviewMockup";
 import BrandMark from "@/components/BrandMark";
 import GradientBlobs from "@/components/GradientBlobs";
 import Reveal from "@/components/Reveal";
+import MarketingLandingPage from "@/components/MarketingLandingPage";
 import { createClient } from "@/lib/supabase/client";
 import type { AnalysisResult, SalesDataResult } from "@/lib/types";
 
@@ -26,6 +27,7 @@ export default function Home() {
   const [status, setStatus] = useState<Status>("idle");
   const [formError, setFormError] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   const [agencyFile, setAgencyFile] = useState<File | null>(null);
   const [trade, setTrade] = useState<string>("");
@@ -44,6 +46,7 @@ export default function Home() {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
       setUserEmail(data.user?.email ?? null);
+      setAuthChecked(true);
     });
   }, []);
 
@@ -144,6 +147,14 @@ export default function Home() {
 
   const showCombinedSnapshot =
     result?.documentSummary.totalSpendNumeric != null && salesResult?.totalRevenueNumeric != null;
+
+  if (!authChecked) {
+    return <div className="min-h-screen bg-[#14283D]" />;
+  }
+
+  if (!userEmail) {
+    return <MarketingLandingPage />;
+  }
 
   return (
     <div className="min-h-screen">
