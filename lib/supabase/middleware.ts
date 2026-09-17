@@ -31,13 +31,14 @@ export async function updateSession(request: NextRequest) {
 
   const isPublicPath = PUBLIC_PATHS.some((path) => request.nextUrl.pathname.startsWith(path));
   const isApiPath = request.nextUrl.pathname.startsWith("/api/");
+  // The root page branches client-side: logged-out visitors get the
+  // marketing landing page, logged-in visitors get the app. It can't use
+  // startsWith in PUBLIC_PATHS above since every path starts with "/".
+  const isRoot = request.nextUrl.pathname === "/";
 
-  if (!user && !isPublicPath && !isApiPath) {
+  if (!user && !isPublicPath && !isApiPath && !isRoot) {
     const url = request.nextUrl.clone();
-    // Cold traffic landing on the bare domain should hit the persuasive
-    // signup page, not a context-less login form. Its magic-link form works
-    // identically for returning users, so this costs existing users nothing.
-    url.pathname = request.nextUrl.pathname === "/" ? "/signup" : "/login";
+    url.pathname = "/login";
     return NextResponse.redirect(url);
   }
 
