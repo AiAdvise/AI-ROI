@@ -3,6 +3,8 @@ import GradientBlobs from "@/components/GradientBlobs";
 import Reveal from "@/components/Reveal";
 import MagicLinkForm from "@/components/MagicLinkForm";
 import GradeCardPreview from "@/components/GradeCardPreview";
+import FindingsPreview from "@/components/FindingsPreview";
+import EmailDraftPreview from "@/components/EmailDraftPreview";
 
 const FOUNDING_PRICE_SPOTS = 10;
 
@@ -113,6 +115,24 @@ export default async function SignupPage() {
                 Not shared with your ad rep — this tool works for you, not for them.
               </p>
             </div>
+          </div>
+        </Reveal>
+
+        <Reveal className="mt-16 lg:mt-24">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm font-semibold text-[#C99CE0]">See exactly what you get</p>
+            <h2 className="mt-2 font-[family-name:var(--font-heading)] text-2xl font-bold sm:text-3xl">
+              Real findings from a real report — not a mockup.
+            </h2>
+            <p className="mt-3 text-[#C7D2DD]">
+              These are pulled straight from an actual diagnostic. Yours will look like this,
+              built from your own numbers.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-8 lg:grid-cols-2 lg:gap-10">
+            <FindingsPreview />
+            <EmailDraftPreview />
           </div>
         </Reveal>
       </div>
