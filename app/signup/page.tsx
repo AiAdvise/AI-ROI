@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import BrandMark from "@/components/BrandMark";
 import GradientBlobs from "@/components/GradientBlobs";
 import Reveal from "@/components/Reveal";
 import MagicLinkForm from "@/components/MagicLinkForm";
+import GradeCardPreview from "@/components/GradeCardPreview";
 
 const FOUNDING_PRICE_SPOTS = 10;
 
@@ -10,8 +10,12 @@ const OFFER_POINTS = [
   "Full access, free for your first 3 months",
   "No credit card required to sign up",
   "After 3 months, locked in at $15/mo for as long as you stay",
-  "Cancel anytime — no obligation",
+  "That rate goes away once the beta ends — new users won't get it",
+  "Cancel anytime, no obligation",
 ];
+
+const MARKETING_BUTTON_CLASSES =
+  "w-full rounded-md bg-[#8B3FA8] px-4 py-3 text-sm font-bold text-white shadow-[0_8px_22px_rgba(139,63,168,0.35)] transition-colors hover:bg-[#6E2F87] disabled:opacity-50";
 
 export default async function SignupPage() {
   const supabase = await createClient();
@@ -19,52 +23,96 @@ export default async function SignupPage() {
   const spotsLeft = Math.max(0, FOUNDING_PRICE_SPOTS - (spotsTaken ?? 0));
 
   return (
-    <main className="relative min-h-screen flex items-center justify-center px-4 py-16 overflow-hidden">
+    <main className="relative min-h-screen overflow-hidden bg-[#14283D] px-4 py-10 font-[family-name:var(--font-body)] text-white sm:px-8 sm:py-14 lg:px-16">
       <GradientBlobs />
-      <Reveal className="w-full max-w-md">
-        <div className="text-center mb-6">
-          <BrandMark className="text-2xl" />
-          <h1 className="mt-4 text-xl font-serif font-semibold text-ink">
-            Find out if your ad spend is actually working.
-          </h1>
-          <p className="mt-2 text-sm text-ink-soft">
-            Upload your media plan and sales data. Get a graded diagnostic, a Trends report, and a
-            ready-to-send email to your ad rep — no marketing background required.
-          </p>
-        </div>
 
-        <div className="mb-6 rounded-2xl border border-line bg-paper-raised p-5">
-          <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">
-            Founding beta offer
+      <div className="relative mx-auto flex max-w-5xl items-center gap-2">
+        <svg viewBox="0 0 40 40" className="h-7 w-7 flex-shrink-0" aria-hidden>
+          <defs>
+            <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stopColor="#4C3F91" />
+              <stop offset="1" stopColor="#B23E7E" />
+            </linearGradient>
+          </defs>
+          <circle cx="20" cy="20" r="20" fill="url(#logoGrad)" />
+          <polyline
+            points="7,21 13,21 16,13 21,29 24,17 27,21 33,21"
+            fill="none"
+            stroke="white"
+            strokeWidth="2.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="font-[family-name:var(--font-heading)] text-lg font-bold tracking-tight">
+          Ad
+          <span className="bg-gradient-to-br from-[#C99CE0] to-[#F2A9C9] bg-clip-text text-transparent">
+            Vitals
+          </span>
+        </span>
+      </div>
+
+      <Reveal className="relative mx-auto mt-10 grid max-w-5xl gap-12 lg:mt-16 lg:grid-cols-[1.05fr_0.95fr] lg:items-start lg:gap-16">
+        <div>
+          <p className="text-sm font-semibold text-[#C99CE0]">
+            Independent. We&apos;re not an ad agency or media company, and we don&apos;t work for
+            either.
           </p>
-          <ul className="mt-3 space-y-2">
+          <h1 className="mt-3 font-[family-name:var(--font-heading)] text-3xl font-bold leading-tight sm:text-4xl">
+            Find out if your ad spend is{" "}
+            <span className="bg-gradient-to-br from-[#C99CE0] to-[#F2A9C9] bg-clip-text text-transparent">
+              actually working
+            </span>
+            .
+          </h1>
+          <p className="mt-4 max-w-md text-[#C7D2DD]">
+            Upload your media plan and your sales data. Get a graded diagnostic, a Trends report
+            that tracks real growth, and a ready-to-send email to your ad rep — no marketing
+            background required.
+          </p>
+
+          <ul className="mt-8 space-y-3">
             {OFFER_POINTS.map((point) => (
-              <li key={point} className="flex gap-2 text-sm text-ink">
-                <span className="text-good">✓</span>
+              <li key={point} className="flex gap-3 text-sm text-[#E4EAF0]">
+                <span className="mt-0.5 text-[#C99CE0]">✓</span>
                 <span>{point}</span>
               </li>
             ))}
           </ul>
-          {spotsLeft > 0 ? (
-            <p className="mt-3 text-xs font-medium text-accent">
-              {spotsLeft} of {FOUNDING_PRICE_SPOTS} founding spots left at that price.
-            </p>
-          ) : (
-            <p className="mt-3 text-xs font-medium text-ink-soft">
-              Founding pricing is claimed — join the beta below and we&apos;ll follow up on pricing.
-            </p>
-          )}
+
+          <p className="mt-6 text-sm text-[#93A6B8]">
+            Zero risk: free, no card, cancel anytime. The only thing you&apos;re spending is about
+            10 minutes.
+          </p>
         </div>
 
-        <MagicLinkForm
-          submitLabel="Start my free trial"
-          sendingLabel="Sending link..."
-          sentDescription="for your beta access link"
-        />
+        <div>
+          <GradeCardPreview />
 
-        <p className="mt-4 text-center text-xs text-ink-soft">
-          Not shared with your ad rep — this tool works for you, not for them.
-        </p>
+          <div className="mt-6">
+            {spotsLeft > 0 ? (
+              <p className="mb-3 text-sm font-semibold text-[#F0A8C8]">
+                {spotsLeft} of {FOUNDING_PRICE_SPOTS} founding spots left at that price.
+              </p>
+            ) : (
+              <p className="mb-3 text-sm font-semibold text-[#C7D2DD]">
+                Founding pricing is claimed — join the beta below and we&apos;ll follow up on
+                pricing.
+              </p>
+            )}
+
+            <MagicLinkForm
+              submitLabel="Get Early Access, Free"
+              sendingLabel="Sending link..."
+              sentDescription="for your beta access link"
+              buttonClassName={MARKETING_BUTTON_CLASSES}
+            />
+
+            <p className="mt-4 text-center text-xs text-[#93A6B8]">
+              Not shared with your ad rep — this tool works for you, not for them.
+            </p>
+          </div>
+        </div>
       </Reveal>
     </main>
   );
