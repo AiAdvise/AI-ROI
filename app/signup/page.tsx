@@ -6,6 +6,13 @@ import MagicLinkForm from "@/components/MagicLinkForm";
 
 const FOUNDING_PRICE_SPOTS = 10;
 
+const OFFER_POINTS = [
+  "Full access, free for your first 3 months",
+  "No credit card required to sign up",
+  "After 3 months, locked in at $15/mo for as long as you stay",
+  "Cancel anytime — no obligation",
+];
+
 export default async function SignupPage() {
   const supabase = await createClient();
   const { data: spotsTaken } = await supabase.rpc("beta_spots_taken");
@@ -14,19 +21,36 @@ export default async function SignupPage() {
   return (
     <main className="relative min-h-screen flex items-center justify-center px-4 py-16 overflow-hidden">
       <GradientBlobs />
-      <Reveal className="w-full max-w-sm">
-        <div className="text-center mb-8">
+      <Reveal className="w-full max-w-md">
+        <div className="text-center mb-6">
           <BrandMark className="text-2xl" />
-          <p className="mt-3 text-sm text-ink-soft">
-            3 months free, no credit card. Lock in <span className="font-medium text-ink">$15/mo for life</span>{" "}
-            as a founding beta tester.
+          <h1 className="mt-4 text-xl font-serif font-semibold text-ink">
+            Find out if your ad spend is actually working.
+          </h1>
+          <p className="mt-2 text-sm text-ink-soft">
+            Upload your media plan and sales data. Get a graded diagnostic, a Trends report, and a
+            ready-to-send email to your ad rep — no marketing background required.
           </p>
+        </div>
+
+        <div className="mb-6 rounded-2xl border border-line bg-paper-raised p-5">
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-soft">
+            Founding beta offer
+          </p>
+          <ul className="mt-3 space-y-2">
+            {OFFER_POINTS.map((point) => (
+              <li key={point} className="flex gap-2 text-sm text-ink">
+                <span className="text-good">✓</span>
+                <span>{point}</span>
+              </li>
+            ))}
+          </ul>
           {spotsLeft > 0 ? (
-            <p className="mt-2 text-xs font-medium text-accent">
+            <p className="mt-3 text-xs font-medium text-accent">
               {spotsLeft} of {FOUNDING_PRICE_SPOTS} founding spots left at that price.
             </p>
           ) : (
-            <p className="mt-2 text-xs font-medium text-ink-soft">
+            <p className="mt-3 text-xs font-medium text-ink-soft">
               Founding pricing is claimed — join the beta below and we&apos;ll follow up on pricing.
             </p>
           )}
@@ -37,6 +61,10 @@ export default async function SignupPage() {
           sendingLabel="Sending link..."
           sentDescription="for your beta access link"
         />
+
+        <p className="mt-4 text-center text-xs text-ink-soft">
+          Not shared with your ad rep — this tool works for you, not for them.
+        </p>
       </Reveal>
     </main>
   );
