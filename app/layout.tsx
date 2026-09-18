@@ -35,6 +35,7 @@ export const metadata: Metadata = {
 
 const metaPixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
 const clarityProjectId = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID;
+const gaMeasurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -50,6 +51,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               })(window, document, "clarity", "script", "${clarityProjectId}");
             `}
           </Script>
+        )}
+        {gaMeasurementId && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${gaMeasurementId}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${gaMeasurementId}');
+              `}
+            </Script>
+          </>
         )}
         {metaPixelId && (
           <>
