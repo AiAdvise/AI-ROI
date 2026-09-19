@@ -106,7 +106,6 @@ export default async function SignupPage() {
               <SignupMagicLinkForm
                 submitLabel="Get Early Access, Free"
                 sendingLabel="Sending link..."
-                sentDescription="for your beta access link"
                 buttonClassName={MARKETING_BUTTON_CLASSES}
               />
 
@@ -148,7 +147,6 @@ export default async function SignupPage() {
               <SignupMagicLinkForm
                 submitLabel="Get Early Access, Free"
                 sendingLabel="Sending link..."
-                sentDescription="for your beta access link"
                 buttonClassName={MARKETING_BUTTON_CLASSES}
               />
             </div>
