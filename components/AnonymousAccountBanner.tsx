@@ -10,6 +10,7 @@ interface AnonymousAccountBannerProps {
 export default function AnonymousAccountBanner({ email }: AnonymousAccountBannerProps) {
   const [inputEmail, setInputEmail] = useState(email ?? "");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function resend(e: React.FormEvent) {
     e.preventDefault();
@@ -23,6 +24,7 @@ export default function AnonymousAccountBanner({ email }: AnonymousAccountBanner
     );
     if (error) {
       setStatus("error");
+      setErrorMessage(error.message);
       return;
     }
 
@@ -71,7 +73,9 @@ export default function AnonymousAccountBanner({ email }: AnonymousAccountBanner
         )}
 
         {status === "error" && (
-          <p className="text-xs text-severe">Something went wrong. Try again.</p>
+          <p className="text-xs text-severe">
+            Something went wrong{errorMessage ? `: ${errorMessage}` : ""}. Try again.
+          </p>
         )}
       </div>
     </div>
