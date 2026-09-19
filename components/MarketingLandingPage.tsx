@@ -4,6 +4,7 @@ import GradientBlobs from "@/components/GradientBlobs";
 import Reveal from "@/components/Reveal";
 import GradeCardPreview from "@/components/GradeCardPreview";
 import FaqAccordion from "@/components/FaqAccordion";
+import SignupMagicLinkForm from "@/components/SignupMagicLinkForm";
 
 const AGITATE_POINTS = [
   "The report you get every month is full of charts and impressions, but you still can't tell if last month's sales actually came from the ads.",
@@ -71,6 +72,9 @@ const TRUST_ITEMS = [
 
 const GRADIENT_TEXT = "bg-gradient-to-br from-[#C99CE0] to-[#F2A9C9] bg-clip-text text-transparent";
 
+const CTA_BUTTON_CLASSES =
+  "whitespace-nowrap rounded-md bg-[#8B3FA8] px-6 py-3 text-sm font-bold text-white shadow-[0_8px_22px_rgba(139,63,168,0.35)] transition-colors hover:bg-[#6E2F87] disabled:opacity-50";
+
 function trackCtaClick() {
   window.fbq?.("trackCustom", "ClickedSignupCTA");
 }
@@ -129,15 +133,13 @@ export default function MarketingLandingPage() {
             media-buying framework, show you whether sales are actually growing during the
             campaign, and hand you a ready-to-send email with the exact questions to ask.
           </p>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <Link
-              href="/signup"
-              onClick={trackCtaClick}
-              className="rounded-md bg-[#8B3FA8] px-6 py-3 text-sm font-bold text-white shadow-[0_8px_22px_rgba(139,63,168,0.35)] transition-colors hover:bg-[#6E2F87]"
-            >
-              Get Early Access, Free
-            </Link>
-            <span className="text-sm text-[#93A6B8]">Free for 3 months. No card required.</span>
+          <div className="mt-8 max-w-lg">
+            <SignupMagicLinkForm
+              submitLabel="Get Early Access, Free"
+              sendingLabel="Sending..."
+              buttonClassName={CTA_BUTTON_CLASSES}
+            />
+            <p className="mt-3 text-sm text-[#93A6B8]">Free for 3 months. No card required.</p>
           </div>
         </div>
 
@@ -207,14 +209,12 @@ export default function MarketingLandingPage() {
               before wider launch. In exchange for your honest feedback, you get in free and lock
               in a rate that won&apos;t be offered later.
             </p>
-            <div className="mt-6">
-              <Link
-                href="/signup"
-                onClick={trackCtaClick}
-                className="inline-block rounded-md bg-[#8B3FA8] px-6 py-3 text-sm font-bold text-white shadow-[0_8px_22px_rgba(139,63,168,0.35)] transition-colors hover:bg-[#6E2F87]"
-              >
-                Get Early Access, Free
-              </Link>
+            <div className="mt-6 max-w-sm">
+              <SignupMagicLinkForm
+                submitLabel="Get Early Access, Free"
+                sendingLabel="Sending..."
+                buttonClassName={CTA_BUTTON_CLASSES}
+              />
               <p className="mt-3 text-sm text-[#93A6B8]">
                 Zero risk: free, no card, cancel anytime. The only thing you&apos;re spending is
                 about 10 minutes.
@@ -291,13 +291,13 @@ export default function MarketingLandingPage() {
           <h2 className="max-w-md font-[family-name:var(--font-heading)] text-2xl font-bold sm:text-3xl">
             Ready to find out where your ad dollars are actually going?
           </h2>
-          <Link
-            href="/signup"
-            onClick={trackCtaClick}
-            className="rounded-md bg-[#8B3FA8] px-6 py-3 text-sm font-bold text-white shadow-[0_8px_22px_rgba(139,63,168,0.35)] transition-colors hover:bg-[#6E2F87]"
-          >
-            Get Early Access, Free
-          </Link>
+          <div className="w-full max-w-sm sm:w-auto">
+            <SignupMagicLinkForm
+              submitLabel="Get Early Access, Free"
+              sendingLabel="Sending..."
+              buttonClassName={CTA_BUTTON_CLASSES}
+            />
+          </div>
         </div>
       </Reveal>
 
