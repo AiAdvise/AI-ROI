@@ -13,6 +13,7 @@ import BrandMark from "@/components/BrandMark";
 import GradientBlobs from "@/components/GradientBlobs";
 import Reveal from "@/components/Reveal";
 import MarketingLandingPage from "@/components/MarketingLandingPage";
+import AnonymousAccountBanner from "@/components/AnonymousAccountBanner";
 import { createClient } from "@/lib/supabase/client";
 import type { AnalysisResult, SalesDataResult } from "@/lib/types";
 
@@ -28,6 +29,8 @@ export default function Home() {
   const [formError, setFormError] = useState<string | null>(null);
   const [hasUser, setHasUser] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const [isAnonymous, setIsAnonymous] = useState(false);
 
   const [agencyFile, setAgencyFile] = useState<File | null>(null);
   const [trade, setTrade] = useState<string>("");
@@ -47,6 +50,16 @@ export default function Home() {
     supabase.auth.getUser().then(({ data }) => {
       setHasUser(!!data.user);
       setAuthChecked(true);
+
+      if (data.user?.is_anonymous) {
+        setIsAnonymous(true);
+        supabase
+          .from("profiles")
+          .select("email")
+          .eq("id", data.user.id)
+          .single()
+          .then(({ data: profile }) => setPendingEmail(profile?.email ?? null));
+      }
     });
   }, []);
 
@@ -196,6 +209,8 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {isAnonymous && <AnonymousAccountBanner email={pendingEmail} />}
 
       <main className="relative px-4 py-14 sm:py-20">
         {status !== "done" && <GradientBlobs />}
