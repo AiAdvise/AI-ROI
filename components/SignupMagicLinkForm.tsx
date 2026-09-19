@@ -40,8 +40,13 @@ export default function SignupMagicLinkForm({
     }
 
     // Best-effort: attach + confirm the email in the background so it
-    // doesn't block getting the user into the app right away.
-    supabase.auth.updateUser({ email }).catch(() => {});
+    // doesn't block getting the user into the app right away. Without an
+    // explicit emailRedirectTo, Supabase sends the confirm link back to its
+    // default Site URL instead of our /auth/callback route, which never
+    // completes the session - same failure mode as the old magic-link bug.
+    supabase.auth
+      .updateUser({ email }, { emailRedirectTo: `${window.location.origin}/auth/callback` })
+      .catch(() => {});
     supabase.rpc("claim_signup_email", { p_email: email }).then(() => {});
 
     window.fbq?.("track", "Lead");
