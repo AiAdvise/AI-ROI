@@ -75,9 +75,9 @@ export default async function SignupPage() {
               .
             </h1>
             <p className="mt-4 max-w-md text-[#C7D2DD] lg:max-w-lg lg:text-lg">
-              Upload your media plan and your sales data. Get a graded diagnostic, a Trends
-              report that tracks real growth, and a ready-to-send email to your ad rep — no
-              marketing background required.
+              Upload your ad report and get a graded diagnostic in minutes — no marketing
+              background required. Add your sales data any time after to see a Trends report
+              that tracks whether it&apos;s actually turning into real growth.
             </p>
 
             <ul className="mt-8 space-y-3 lg:space-y-4">
@@ -91,7 +91,7 @@ export default async function SignupPage() {
 
             <p className="mt-6 text-sm text-[#93A6B8] lg:text-base">
               Zero risk: free, no card, cancel anytime. The only thing you&apos;re spending is
-              about 10 minutes.
+              a couple of minutes.
             </p>
           </div>
 

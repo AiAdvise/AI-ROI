@@ -15,16 +15,16 @@ const AGITATE_POINTS = [
 
 const STEPS = [
   {
-    title: "Upload your media plan",
+    title: "Upload your ad report",
     body: "The report your agency, station, or ad rep already sends you — whatever format it's in.",
   },
   {
-    title: "Upload your sales data",
-    body: "An export from your CRM or job-tracking software with dates and job values.",
+    title: "Get your grade",
+    body: "A plain-English breakdown of what's working, what isn't, and why — in minutes.",
   },
   {
-    title: "Get your grade",
-    body: "A plain-English breakdown of what's working, what isn't, and why.",
+    title: "See if it's turning into jobs",
+    body: "Optional: add your sales or CRM export any time to see whether the spend is actually driving business.",
   },
 ];
 
@@ -129,9 +129,9 @@ export default function MarketingLandingPage() {
           </p>
           <p className="mt-4 max-w-lg text-[#C7D2DD] lg:text-lg">
             Upload the ad report or media plan from your agency, TV/radio rep, or whoever handles
-            your advertising, plus your sales or CRM export. We grade it against a real
-            media-buying framework, show you whether sales are actually growing during the
-            campaign, and hand you a ready-to-send email with the exact questions to ask.
+            your advertising. We&apos;ll grade it against a real media-buying framework and give
+            you a plain-English answer in minutes. Add your sales data any time after to see
+            whether it&apos;s actually turning into jobs.
           </p>
           <div className="mt-8 max-w-lg">
             <SignupMagicLinkForm
@@ -165,7 +165,7 @@ export default function MarketingLandingPage() {
       <Reveal className="relative mx-auto max-w-6xl px-4 py-14 sm:px-8 xl:max-w-7xl">
         <p className="text-sm font-semibold text-[#C99CE0]">How it works</p>
         <h2 className="mt-2 font-[family-name:var(--font-heading)] text-2xl font-bold sm:text-3xl">
-          Ten minutes, two uploads, one honest answer.
+          One upload, a couple of minutes, one honest answer.
         </h2>
         <div className="mt-8 grid gap-8 sm:grid-cols-3">
           {STEPS.map((step, i) => (
@@ -217,7 +217,7 @@ export default function MarketingLandingPage() {
               />
               <p className="mt-3 text-sm text-[#93A6B8]">
                 Zero risk: free, no card, cancel anytime. The only thing you&apos;re spending is
-                about 10 minutes.
+                a couple of minutes.
               </p>
             </div>
           </div>

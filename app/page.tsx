@@ -44,6 +44,7 @@ export default function Home() {
   const [salesResult, setSalesResult] = useState<SalesDataResult | null>(null);
   const [salesResultId, setSalesResultId] = useState<string | null>(null);
   const [salesError, setSalesError] = useState<string | null>(null);
+  const [salesUploading, setSalesUploading] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -119,6 +120,12 @@ export default function Home() {
     } catch (err) {
       setSalesError(err instanceof Error ? err.message : "Something went wrong.");
     }
+  }
+
+  async function handleAddSalesData() {
+    setSalesUploading(true);
+    await uploadSalesData();
+    setSalesUploading(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -222,13 +229,12 @@ export default function Home() {
                 <div>
                   <div className="text-center lg:text-left">
                     <h1 className="gradient-text font-serif text-3xl sm:text-4xl font-semibold tracking-tight text-balance">
-                      Your monthly marketing &amp; sales check-in
+                      Get an honest read on your ad spend
                     </h1>
                     <p className="mt-4 text-ink-soft leading-relaxed">
-                      Upload this month&apos;s agency report, your sales/CRM export, or both
-                      together. We&apos;ll diagnose the ad report against a real media-buying
-                      framework, track your sales over time, and - when you upload both - show you
-                      whether the spend is actually turning into business.
+                      Upload your agency report to get a graded diagnostic in minutes. Add your
+                      sales or CRM export any time to see whether that spend is actually turning
+                      into jobs, not just clicks.
                     </p>
                   </div>
 
@@ -249,7 +255,7 @@ export default function Home() {
                     </div>
                     <div>
                       <p className="text-xs font-semibold uppercase tracking-widest text-ink-soft mb-2">
-                        Sales Data (CRM)
+                        Sales Data (CRM) — optional, but recommended
                       </p>
                       <SalesUploadForm
                         file={salesFile}
@@ -361,6 +367,35 @@ export default function Home() {
                     </div>
                   )
                 )}
+              </div>
+            )}
+
+            {result && !salesResult && (
+              <div className="no-print max-w-4xl mx-auto mb-10 rounded-xl border border-accent/20 bg-accent-soft p-5">
+                <p className="text-sm font-semibold text-ink">
+                  Want to know if this actually turned into jobs?
+                </p>
+                <p className="mt-1 text-sm text-ink-soft">
+                  Upload your sales or CRM export and we&apos;ll show you whether the spend is
+                  driving real business, not just clicks.
+                </p>
+                <div className="mt-4">
+                  <SalesUploadForm
+                    file={salesFile}
+                    onFileChange={setSalesFile}
+                    notes={salesNotes}
+                    onNotesChange={setSalesNotes}
+                    disabled={salesUploading}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddSalesData}
+                  disabled={!salesFile || salesUploading}
+                  className="mt-3 rounded-lg bg-gradient-to-r from-brand-a via-brand-b to-brand-c bg-[length:160%_100%] bg-[position:0%_0%] px-4 py-2 text-sm font-medium text-white shadow-md transition-[background-position,transform,box-shadow] duration-300 hover:bg-[position:100%_0%] hover:shadow-lg active:scale-[0.99] disabled:opacity-40 disabled:hover:bg-[position:0%_0%] disabled:hover:shadow-md"
+                >
+                  {salesUploading ? "Checking..." : "Check against my sales"}
+                </button>
               </div>
             )}
 
