@@ -44,9 +44,13 @@ export default function SignupMagicLinkForm({
     // explicit emailRedirectTo, Supabase sends the confirm link back to its
     // default Site URL instead of our /auth/callback route, which never
     // completes the session - same failure mode as the old magic-link bug.
+    // Logged (not swallowed) rather than blocking access, since a failure
+    // here (e.g. a rate limit) shouldn't stop the user from getting in.
     supabase.auth
       .updateUser({ email }, { emailRedirectTo: `${window.location.origin}/auth/callback` })
-      .catch(() => {});
+      .then(({ error: updateError }) => {
+        if (updateError) console.error("updateUser(email) failed:", updateError.message);
+      });
     supabase.rpc("claim_signup_email", { p_email: email }).then(() => {});
 
     window.fbq?.("track", "Lead");
