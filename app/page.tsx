@@ -26,7 +26,7 @@ export default function Home() {
   const router = useRouter();
   const [status, setStatus] = useState<Status>("idle");
   const [formError, setFormError] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [hasUser, setHasUser] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
 
   const [agencyFile, setAgencyFile] = useState<File | null>(null);
@@ -45,7 +45,7 @@ export default function Home() {
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data }) => {
-      setUserEmail(data.user?.email ?? null);
+      setHasUser(!!data.user);
       setAuthChecked(true);
     });
   }, []);
@@ -152,7 +152,7 @@ export default function Home() {
     return <div className="min-h-screen bg-[#14283D]" />;
   }
 
-  if (!userEmail) {
+  if (!hasUser) {
     return <MarketingLandingPage />;
   }
 
@@ -162,7 +162,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <BrandMark className="text-lg" />
           <div className="flex items-center gap-4">
-            {userEmail && (
+            {hasUser && (
               <>
                 <Link
                   href="/trends"
@@ -178,7 +178,7 @@ export default function Home() {
                 </Link>
               </>
             )}
-            {userEmail ? (
+            {hasUser ? (
               <button
                 onClick={handleSignOut}
                 className="text-sm font-medium text-ink-soft underline underline-offset-4 hover:text-ink"
